@@ -66,6 +66,18 @@
         /* Screens */
         #menu-screen, #cart-screen { display: none; }
 
+        /* Welcome Back Banner */
+        #welcome-back-section {
+            display: none;
+            background: rgba(234, 181, 67, 0.9);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border: 2px solid var(--primary);
+        }
+
         /* Menu Layout */
         .menu-layout {
             display: flex;
@@ -178,6 +190,15 @@
 <div class="container">
     <div id="branch-screen">
         <h1>Manny's Burger 🍔</h1>
+        
+        <!-- قسم الذاكرة الذكية (بيظهر بس للعميل القديم) -->
+        <div id="welcome-back-section">
+            <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
+            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
+            <button class="btn btn-secondary" onclick="reorderLastTime()">🍔 اطلب نفس الأوردر بضغطة واحدة</button>
+            <p style="font-size: 13px; margin-bottom: 0;">أو اختار الفرع تحت لو حابب تعمل أوردر جديد</p>
+        </div>
+
         <h2>بتطلب منين؟</h2>
         <button class="btn" onclick="selectBranch('Faisal')">فرع فيصل</button>
         <button class="btn" onclick="selectBranch('Sharm')">فرع شرم الشيخ</button>
@@ -205,6 +226,7 @@
         </div>
 
         <h3>بيانات التوصيل</h3>
+        <!-- البيانات دي هتتملي لوحدها للعميل القديم -->
         <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم" required></div>
         <div class="form-group"><input type="tel" id="cust-phone" placeholder="رقم الموبايل" required></div>
         <div class="form-group"><input type="text" id="cust-street" placeholder="الشارع" required></div>
@@ -239,7 +261,7 @@
 
 <script>
     // ==========================================
-    // تهيئة المؤثرات الصوتية (Sound Effects)
+    // تهيئة المؤثرات الصوتية
     // ==========================================
     const sfx = {
         grill: new Audio('grill.mp3'),
@@ -250,7 +272,6 @@
         motorcycle: new Audio('motorcycle.mp3')
     };
 
-    // تشغيل الصوت حسب القسم
     function playCategorySound(category) {
         if (category === "Beef") {
             sfx.grill.currentTime = 0; sfx.grill.play().catch(()=>{});
@@ -264,7 +285,7 @@
     }
 
     // ==========================================
-    // قاعدة البيانات الشاملة
+    // قاعدة البيانات
     // ==========================================
     const menuData = [
         { category: "Beef", name: "Classic Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 120, "250g": 170, "300g": 190, "400g": 240 }, Sharm: { "150g": 140, "250g": 200, "300g": 220, "400g": 270 } } },
@@ -277,7 +298,6 @@
         { category: "Beef", name: "Mushroom Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 150, "250g": 200, "300g": 220, "400g": 270 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
         { category: "Beef", name: "Smoked Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
         { category: "Beef", name: "Smash Burger", sizes: ["Double", "Triple"], prices: { Faisal: { "Double": 200, "Triple": 250 }, Sharm: { "Double": 240, "Triple": 290 } } },
-
         { category: "Chicken", name: "Classic Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 110, "Double": 160, "Triple": 210 }, Sharm: { "Single": 120, "Double": 170, "Triple": 220 } } },
         { category: "Chicken", name: "Supreme Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 125, "Double": 175, "Triple": 225 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
         { category: "Chicken", name: "Ranch Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
@@ -287,12 +307,10 @@
         { category: "Chicken", name: "Magnum Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
         { category: "Chicken", name: "Chicken Yellow", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
         { category: "Chicken", name: "Mano Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 100, "Double": 150, "Triple": 200 }, Sharm: { "Single": 120, "Double": 180, "Triple": 240 } } },
-
         { category: "Sandwich", name: "Smoked Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 110 }, Sharm: { "One Size": 120 } } },
         { category: "Sandwich", name: "Classic Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
         { category: "Sandwich", name: "Chicken Wrap", sizes: ["One Size"], needsCookingType: true, prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
         { category: "Sandwich", name: "Loaded Fries Wrap", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 90 } } },
-
         { category: "Fries", name: "Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
         { category: "Fries", name: "Crispy Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 70 } } },
         { category: "Fries", name: "Chili Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
@@ -300,12 +318,10 @@
         { category: "Fries", name: "Smoky Doggy", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 70, "Large": 120 }, Sharm: { "Small": 100, "Large": 180 } } },
         { category: "Fries", name: "Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
         { category: "Fries", name: "Chicky Fries", sizes: ["Small", "Large"], needsCookingType: true, prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
-
         { category: "Sides", name: "Mozzarella sticks", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
         { category: "Sides", name: "Cheddar jalapeno", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
         { category: "Sides", name: "Onion rings", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
         { category: "Sides", name: "Coleslaw", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 50 } } },
-        
         { category: "Sauces", name: "Cheddar cheese sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 25 }, Sharm: { "One Size": 30 } } },
         { category: "Sauces", name: "Fire sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
         { category: "Sauces", name: "Ranch sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
@@ -316,7 +332,6 @@
         { category: "Sauces", name: "Buffalo sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
         { category: "Sauces", name: "Honey mustard sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
         { category: "Sauces", name: "Dynamite sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-
         { category: "Extra", name: "Extra bun", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 25 } } },
         { category: "Extra", name: "Extra patty 150gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 100 } } },
         { category: "Extra", name: "Extra patty 250gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 120 }, Sharm: { "One Size": 145 } } },
@@ -330,7 +345,6 @@
         { category: "Extra", name: "Cheese extra", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 35 } } },
         { category: "Extra", name: "Cheese slice", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
         { category: "Extra", name: "Spicy (jalapeno + fire)", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
-
         { category: "Drinks", name: "Soft Drink", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 40 } } }
     ];
 
@@ -340,6 +354,58 @@
     let selectedItemIndex = null;
     
     const WHATSAPP_NUMBER = "201070500094"; 
+
+    // ==========================================
+    // الذاكرة الذكية - جلب البيانات القديمة
+    // ==========================================
+    function checkSmartMemory() {
+        const savedCustStr = localStorage.getItem('mannys_customer');
+        const savedOrderStr = localStorage.getItem('mannys_last_order');
+
+        if (savedCustStr) {
+            const cust = JSON.parse(savedCustStr);
+            // ملء بيانات العميل تلقائياً
+            document.getElementById("cust-name").value = cust.name || "";
+            document.getElementById("cust-phone").value = cust.phone || "";
+            document.getElementById("cust-street").value = cust.street || "";
+            document.getElementById("cust-building").value = cust.building || "";
+            document.getElementById("cust-floor").value = cust.floor || "";
+            document.getElementById("cust-apt").value = cust.apt || "";
+            document.getElementById("cust-landmark").value = cust.landmark || "";
+
+            // لو عنده أوردر قديم، نظهرله رسالة الترحيب
+            if (savedOrderStr && JSON.parse(savedOrderStr).length > 0) {
+                // استخراج الاسم الأول فقط للترحيب
+                const firstName = cust.name.split(' ')[0];
+                document.getElementById("saved-name").innerText = firstName;
+                document.getElementById("welcome-back-section").style.display = "block";
+            }
+        }
+    }
+    // تشغيل الدالة أول ما الموقع يفتح
+    window.onload = checkSmartMemory;
+
+    // ==========================================
+    // إعادة طلب آخر أوردر بضغطة واحدة
+    // ==========================================
+    function reorderLastTime() {
+        const savedOrderStr = localStorage.getItem('mannys_last_order');
+        const savedCustStr = localStorage.getItem('mannys_customer');
+        
+        if (savedOrderStr && savedCustStr) {
+            cart = JSON.parse(savedOrderStr);
+            const cust = JSON.parse(savedCustStr);
+            currentBranch = cust.branch || 'Faisal';
+            
+            document.getElementById("branch-screen").style.display = "none";
+            document.getElementById("cart-screen").style.display = "block";
+            
+            updateCartCount();
+            renderCart();
+            
+            sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{});
+        }
+    }
 
     function selectBranch(branch) {
         currentBranch = branch;
@@ -422,9 +488,7 @@
             cookType: cookType
         });
 
-        // تشغيل صوت الإضافة حسب القسم
         playCategorySound(item.category);
-
         updateCartCount();
         closeModal();
     }
@@ -438,7 +502,6 @@
             alert("السلة فاضية! اختار ساندوتشاتك الأول.");
             return;
         }
-        // تشغيل صوت جرس الكاشير
         sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{});
 
         document.getElementById("menu-screen").style.display = "none";
@@ -493,7 +556,6 @@
             return;
         }
 
-        // تشغيل صوت موتسيكل الدليفري قبل ما يفتح الواتساب بـ ثانية
         sfx.motorcycle.currentTime = 0; 
         sfx.motorcycle.play().catch(()=>{});
 
@@ -502,6 +564,13 @@
         const apt = document.getElementById("cust-apt").value;
         const landmark = document.getElementById("cust-landmark").value;
         const globalNote = document.getElementById("global-note").value;
+
+        // ==========================================
+        // حفظ بيانات العميل في الذاكرة (Smart Memory)
+        // ==========================================
+        const customerData = { name, phone, street, building, floor, apt, landmark, branch: currentBranch };
+        localStorage.setItem('mannys_customer', JSON.stringify(customerData));
+        localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
         let total = 0;
         let message = `*طلب جديد من فرع: ${currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ'}* 🍔\n`;
@@ -529,7 +598,6 @@
 
         const encodedMsg = encodeURIComponent(message);
         
-        // تأخير بسيط 500 جزء من الثانية عشان العميل يلحق يسمع صوت الموتسيكل قبل ما ينقله للواتساب
         setTimeout(() => {
             window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`, '_blank');
         }, 500);
