@@ -27,6 +27,7 @@
             color: var(--dark);
         }
 
+        /* خلفية اللوجو المائية */
         body::before {
             content: "";
             position: fixed;
@@ -49,6 +50,7 @@
         }
         h1, h2, h3 { text-align: center; }
         
+        /* Buttons */
         .btn {
             display: block;
             width: 100%;
@@ -67,8 +69,29 @@
         .btn-secondary { background-color: var(--dark); color: var(--light); }
         .btn-danger { background-color: #dc3545; color: white; }
 
+        /* نبض الزرار الأخضر */
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
+        }
+
+        /* Screens */
         #menu-screen, #cart-screen { display: none; }
 
+        /* PWA Install Section */
+        #pwa-install-section {
+            display: none;
+            background-color: #e8f5e9;
+            border: 2px solid #28a745;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Welcome Back Banner */
         #welcome-back-section {
             display: none;
             background: rgba(234, 181, 67, 0.9);
@@ -80,6 +103,7 @@
             border: 2px solid var(--primary);
         }
 
+        /* Menu Layout */
         .menu-layout {
             display: flex;
             gap: 10px;
@@ -140,6 +164,7 @@
         }
         .item-btn:active { transform: scale(0.95); box-shadow: inset 1px 1px 4px rgba(0,0,0,0.1); }
 
+        /* Modal */
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -163,6 +188,7 @@
             border: 1px solid var(--border); font-size: 16px; font-family: inherit;
         }
         
+        /* Cart */
         .cart-item {
             background: rgba(255, 255, 255, 0.9);
             border-radius: 8px; padding: 15px; margin-bottom: 10px;
@@ -189,7 +215,25 @@
 <div class="container">
     <div id="branch-screen">
         <h1>Manny's Burger 🍔</h1>
+
+        <!-- قسم تحميل التطبيق (PWA) الذكي -->
+        <div id="pwa-install-section">
+            <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: #155724; font-size: 15px;"></p>
+            
+            <!-- زرار الأندرويد -->
+            <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
+                📲 نزل الأبلكيشن دلوقتي
+            </button>
+            
+            <!-- رسالة الآيفون -->
+            <div id="ios-instructions" style="display: none; color: #155724; font-size: 14px; line-height: 1.6;">
+                لتثبيت التطبيق على الآيفون: <br>
+                اضغط على زر المشاركة <span style="font-size: 18px; font-weight: bold;">⍗</span> أسفل الشاشة <br>
+                ثم اختر <strong>Add to Home Screen ➕</strong>
+            </div>
+        </div>
         
+        <!-- قسم الذاكرة الذكية -->
         <div id="welcome-back-section">
             <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
             <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
@@ -220,7 +264,7 @@
         
         <h3>ملاحظات الطلب</h3>
         <div class="form-group">
-            <textarea id="global-note" rows="3" placeholder="اكتب هنا أي ملاحظات إضافية (مثال: الكلاسيك بدون بصل)"></textarea>
+            <textarea id="global-note" rows="3" placeholder="اكتب هنا أي ملاحظات إضافية (مثال: الكلاسيك بدون بصل، البطاطس عليها صوص جبنة)"></textarea>
         </div>
 
         <h3>بيانات التوصيل</h3>
@@ -257,6 +301,9 @@
 </div>
 
 <script>
+    // ==========================================
+    // تهيئة المؤثرات الصوتية
+    // ==========================================
     const sfx = {
         grill: new Audio('grill.mp3'),
         fry: new Audio('fry.mp3'),
@@ -278,15 +325,67 @@
         }
     }
 
+    // ==========================================
+    // قاعدة البيانات
+    // ==========================================
     const menuData = [
         { category: "Beef", name: "Classic Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 120, "250g": 170, "300g": 190, "400g": 240 }, Sharm: { "150g": 140, "250g": 200, "300g": 220, "400g": 270 } } },
         { category: "Beef", name: "Caramelized Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 140, "250g": 190, "300g": 210, "400g": 260 }, Sharm: { "150g": 160, "250g": 220, "300g": 240, "400g": 290 } } },
         { category: "Beef", name: "White Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 155, "250g": 205, "300g": 225, "400g": 275 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
         { category: "Beef", name: "New York Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
+        { category: "Beef", name: "Fire Bite Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 165, "250g": 215, "300g": 235, "400g": 285 }, Sharm: { "150g": 185, "250g": 245, "300g": 265, "400g": 315 } } },
+        { category: "Beef", name: "Boskino Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 170, "250g": 220, "300g": 240, "400g": 290 }, Sharm: { "150g": 190, "250g": 250, "300g": 270, "400g": 320 } } },
+        { category: "Beef", name: "Texas Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
+        { category: "Beef", name: "Mushroom Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 150, "250g": 200, "300g": 220, "400g": 270 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
+        { category: "Beef", name: "Smoked Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
         { category: "Beef", name: "Smash Burger", sizes: ["Double", "Triple"], prices: { Faisal: { "Double": 200, "Triple": 250 }, Sharm: { "Double": 240, "Triple": 290 } } },
         { category: "Chicken", name: "Classic Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 110, "Double": 160, "Triple": 210 }, Sharm: { "Single": 120, "Double": 170, "Triple": 220 } } },
+        { category: "Chicken", name: "Supreme Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 125, "Double": 175, "Triple": 225 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Ranch Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
+        { category: "Chicken", name: "RBJ Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 140, "Double": 190, "Triple": 240 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Chili Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "NASA Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Magnum Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
+        { category: "Chicken", name: "Chicken Yellow", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Mano Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 100, "Double": 150, "Triple": 200 }, Sharm: { "Single": 120, "Double": 180, "Triple": 240 } } },
         { category: "Sandwich", name: "Smoked Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 110 }, Sharm: { "One Size": 120 } } },
+        { category: "Sandwich", name: "Classic Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
+        { category: "Sandwich", name: "Chicken Wrap", sizes: ["One Size"], needsCookingType: true, prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
+        { category: "Sandwich", name: "Loaded Fries Wrap", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 90 } } },
         { category: "Fries", name: "Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
+        { category: "Fries", name: "Crispy Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 70 } } },
+        { category: "Fries", name: "Chili Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
+        { category: "Fries", name: "Beef Bacon Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
+        { category: "Fries", name: "Smoky Doggy", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 70, "Large": 120 }, Sharm: { "Small": 100, "Large": 180 } } },
+        { category: "Fries", name: "Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
+        { category: "Fries", name: "Chicky Fries", sizes: ["Small", "Large"], needsCookingType: true, prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
+        { category: "Sides", name: "Mozzarella sticks", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
+        { category: "Sides", name: "Cheddar jalapeno", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
+        { category: "Sides", name: "Onion rings", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
+        { category: "Sides", name: "Coleslaw", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 50 } } },
+        { category: "Sauces", name: "Cheddar cheese sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 25 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Fire sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Ranch sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "BBQ sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Thai chili sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "New York sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Texas sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Buffalo sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Honey mustard sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Sauces", name: "Dynamite sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Extra", name: "Extra bun", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 25 } } },
+        { category: "Extra", name: "Extra patty 150gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 100 } } },
+        { category: "Extra", name: "Extra patty 250gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 120 }, Sharm: { "One Size": 145 } } },
+        { category: "Extra", name: "Extra Chicken piece", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 40 } } },
+        { category: "Extra", name: "Smoked turkey", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 25 } } },
+        { category: "Extra", name: "Smoked beef", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
+        { category: "Extra", name: "Beef Bacon", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 50 } } },
+        { category: "Extra", name: "Carmalised", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 40 } } },
+        { category: "Extra", name: "Mushroom", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 50 } } },
+        { category: "Extra", name: "Add sauce on sandwich", sizes: ["One Size"], prices: { Faisal: { "One Size": 10 }, Sharm: { "One Size": 15 } } },
+        { category: "Extra", name: "Cheese extra", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 35 } } },
+        { category: "Extra", name: "Cheese slice", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
+        { category: "Extra", name: "Spicy (jalapeno + fire)", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
         { category: "Drinks", name: "Soft Drink", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 40 } } }
     ];
 
@@ -297,6 +396,9 @@
     
     const WHATSAPP_NUMBER = "201070500094"; 
 
+    // ==========================================
+    // الذاكرة الذكية
+    // ==========================================
     function checkSmartMemory() {
         const savedCustStr = localStorage.getItem('mannys_customer');
         const savedOrderStr = localStorage.getItem('mannys_last_order');
@@ -339,6 +441,9 @@
         }
     }
 
+    // ==========================================
+    // وظائف المنيو والسلة
+    // ==========================================
     function selectBranch(branch) {
         currentBranch = branch;
         document.getElementById("branch-screen").style.display = "none";
@@ -478,6 +583,9 @@
         }
     }
 
+    // ==========================================
+    // إرسال الواتساب
+    // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value;
         const phone = document.getElementById("cust-phone").value;
@@ -533,19 +641,60 @@
     }
 </script>
 
-<!-- كود تسجيل تطبيق الموبايل PWA -->
+<!-- ==========================================
+     كود تطبيق الموبايل (PWA) الذكي للآيفون والأندرويد
+     ========================================== -->
 <script>
+    // 1. تسجيل الـ Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-            navigator.serviceWorker.register('sw.js')
-            .then(reg => {
-                console.log('App ready to install!', reg);
-            })
-            .catch(err => {
-                console.log('Service Worker registration failed: ', err);
-            });
+            navigator.serviceWorker.register('sw.js').catch(() => console.log('SW Failed'));
         });
     }
+
+    // 2. إعدادات كشف الموبايل وزرار التحميل
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+    const isStandalone = window.navigator.standalone === true; // بيشوف لو الأبلكيشن نازل فعلاً على الآيفون
+    const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches; // بيشوف لو نازل على الأندرويد
+
+    const pwaSection = document.getElementById('pwa-install-section');
+    const pwaText = document.getElementById('pwa-text');
+    const androidBtn = document.getElementById('android-install-btn');
+    const iosInstructions = document.getElementById('ios-instructions');
+
+    // لو العميل آيفون ولسه منزلش الأبلكيشن
+    if (isIOS && !isStandalone) {
+        pwaSection.style.display = 'block';
+        pwaText.innerText = "أضف مانيز لموبايلك لطلب أسرع! 🍔";
+        iosInstructions.style.display = 'block';
+    }
+
+    // لو العميل أندرويد ولسه منزلش الأبلكيشن (جوجل كروم بيبعت الحدث ده)
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        // منع كروم من إظهار الرسالة التلقائية
+        e.preventDefault();
+        deferredPrompt = e;
+        
+        // إظهار القسم والزرار الأخضر
+        if(!isAndroidStandalone){
+            pwaSection.style.display = 'block';
+            pwaText.innerText = "نزل أبلكيشن مانيز واطلب بضغطة واحدة! 🍔";
+            androidBtn.style.display = 'block';
+        }
+    });
+
+    // لما العميل يدوس على الزرار الأخضر (للأندرويد)
+    androidBtn.addEventListener('click', async () => {
+        if (deferredPrompt !== null) {
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            if (outcome === 'accepted') {
+                pwaSection.style.display = 'none'; // نخفي الزرار بعد التحميل
+            }
+            deferredPrompt = null;
+        }
+    });
 </script>
 
 </body>
