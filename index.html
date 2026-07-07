@@ -330,8 +330,17 @@
             <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
         </div>
 
-        <button class="btn" onclick="addToCart()">➕ أضف للسلة</button>
+        <button class="btn" onclick="processAddToCart()">➕ أضف للسلة</button>
         <button class="btn btn-danger" style="margin-top:5px;" onclick="closeModal()">إلغاء</button>
+    </div>
+</div>
+
+<div class="modal-overlay" id="upsell-modal">
+    <div class="modal-content" style="background-color: #fff9e6; border: 2px solid var(--primary);">
+        <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
+        <p style="font-size: 16px; font-weight: bold;">ضيف بطاطس وبيبسي مع الساندوتش بـ <span id="upsell-price-display" style="color: #dc3545; font-size: 20px;">0</span> LE بس!</p>
+        <button class="btn" style="background-color: #28a745; color: white;" onclick="confirmUpsell(true)">🍟 أيوة، خليها كومبو!</button>
+        <button class="btn btn-secondary" onclick="confirmUpsell(false)">شكراً، عايز الساندوتش لوحده</button>
     </div>
 </div>
 
@@ -429,8 +438,10 @@
     let activeCategory = "Beef";
     let selectedItemIndex = null;
     let currentModalQty = 1;
+    let pendingItem = null; 
     
     const WHATSAPP_NUMBER = "201070500094"; 
+    const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
 
     // ==========================================
     // الذاكرة الذكية
@@ -518,14 +529,11 @@
 
     function openModal(index) {
         selectedItemIndex = index;
-        currentModalQty = 1; // تصفير العدد كل مرة يفتح ساندوتش جديد
+        currentModalQty = 1; 
         document.getElementById("modal-qty-display").innerText = currentModalQty;
 
         const item = menuData[index];
         document.getElementById("modal-item-name").innerText = item.name;
-        
-        // إخفاء مربع الـ 3D مؤقتاً بناءً على طلبك
-        document.getElementById("ar-container").style.display = "none";
         
         const sizeSelect = document.getElementById("modal-size-select");
         sizeSelect.innerHTML = "";
@@ -555,43 +563,69 @@
         selectedItemIndex = null;
     }
 
-    function addToCart() {
+    function processAddToCart() {
         if(selectedItemIndex === null) return;
         
         const item = menuData[selectedItemIndex];
         const sizeSelect = document.getElementById("modal-size-select").value;
         const [size, price] = sizeSelect.split('|');
         
-        let cookType = "";
-        if (item.needsCookingType) {
-            cookType = document.getElementById("modal-cook-select").value;
-        }
-
-        let parsedPrice = parseInt(price);
+        let cookType = item.needsCookingType ? document.getElementById("modal-cook-select").value : "";
         let cleanSize = size === "One Size" ? "" : size;
 
-        // التحقق لو الساندوتش ده موجود بنفس المواصفات نزود عدده بس
-        let existingItem = cart.find(i => i.name === item.name && i.size === cleanSize && i.cookType === cookType);
-        
-        if (existingItem) {
-            existingItem.quantity += currentModalQty;
+        pendingItem = {
+            name: item.name,
+            category: item.category,
+            size: cleanSize,
+            price: parseInt(price),
+            cookType: cookType,
+            quantity: currentModalQty,
+            hasCombo: false,
+            comboPrice: 0
+        };
+
+        closeModal();
+
+        if (item.category === "Beef" || item.category === "Chicken" || item.category === "Sandwich") {
+            document.getElementById("upsell-price-display").innerText = COMBO_PRICES[currentBranch];
+            document.getElementById("upsell-modal").style.display = "flex";
         } else {
-            cart.push({
-                name: item.name,
-                size: cleanSize,
-                price: parsedPrice,
-                cookType: cookType,
-                quantity: currentModalQty
-            });
+            finalizeAddToCart(false);
+        }
+    }
+
+    function confirmUpsell(wantsCombo) {
+        document.getElementById("upsell-modal").style.display = "none";
+        finalizeAddToCart(wantsCombo);
+    }
+
+    function finalizeAddToCart(wantsCombo) {
+        if (!pendingItem) return;
+
+        if (wantsCombo) {
+            pendingItem.hasCombo = true;
+            pendingItem.comboPrice = COMBO_PRICES[currentBranch];
         }
 
-        playCategorySound(item.category);
+        let existingItem = cart.find(i => 
+            i.name === pendingItem.name && 
+            i.size === pendingItem.size && 
+            i.cookType === pendingItem.cookType &&
+            i.hasCombo === pendingItem.hasCombo
+        );
+        
+        if (existingItem) {
+            existingItem.quantity += pendingItem.quantity;
+        } else {
+            cart.push(pendingItem);
+        }
+
+        playCategorySound(pendingItem.category);
         updateCartCount();
-        closeModal();
+        pendingItem = null;
     }
 
     function updateCartCount() {
-        // حساب إجمالي عدد القطع في السلة
         const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
         document.getElementById("cart-count").innerText = totalItems;
     }
@@ -629,18 +663,22 @@
         let total = 0;
 
         cart.forEach((item, i) => {
-            let itemTotal = item.price * item.quantity;
+            let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
+            let itemTotal = unitPrice * item.quantity;
             total += itemTotal;
             
             let cookStr = item.cookType ? `(${item.cookType})` : "";
             let sizeStr = item.size ? `[${item.size}]` : "";
+            let comboStr = item.hasCombo ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">➕ وجبة كومبو (بطاطس + بيبسي)</span>` : "";
             
             container.innerHTML += `
                 <div class="cart-item">
-                    <strong style="font-size:16px;">${item.name} ${cookStr} ${sizeStr}</strong> <br>
-                    <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
+                    <strong style="font-size:16px;">${item.name} ${cookStr} ${sizeStr}</strong> ${comboStr} <br>
+                    <div style="margin-top: 10px;">
+                        <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
+                    </div>
                     
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                         <div class="qty-controls" style="margin: 0; padding: 0; background: none;">
                             <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, 1)">+</button>
                             <span class="qty-number" style="font-size: 18px;">${item.quantity}</span>
@@ -665,7 +703,7 @@
     }
 
     // ==========================================
-    // إرسال الواتساب
+    // إرسال الواتساب (مع ترتيب الأصناف بذكاء)
     // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value;
@@ -690,6 +728,24 @@
         localStorage.setItem('mannys_customer', JSON.stringify(customerData));
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
+        // ترتيب السلة حسب أهمية الأقسام للمطبخ (من غير ما نغير شكل السلة قدام العميل)
+        const categoryPriority = {
+            "Beef": 1,
+            "Chicken": 2,
+            "Sandwich": 3,
+            "Fries": 4,
+            "Sides": 5,
+            "Sauces": 6,
+            "Extra": 7,
+            "Drinks": 8
+        };
+
+        const sortedCart = [...cart].sort((a, b) => {
+            let orderA = categoryPriority[a.category] || 99;
+            let orderB = categoryPriority[b.category] || 99;
+            return orderA - orderB;
+        });
+
         let total = 0;
         let message = `*طلب جديد من فرع: ${currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ'}* 🍔\n`;
         message += `-------------------\n`;
@@ -700,12 +756,17 @@
         message += `-------------------\n`;
         message += `*الطلب:*\n\n`;
 
-        cart.forEach(item => {
-            let itemTotal = item.price * item.quantity;
+        // قراءة الأصناف بعد الترتيب الذكي
+        sortedCart.forEach(item => {
+            let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
+            let itemTotal = unitPrice * item.quantity;
             total += itemTotal;
+            
             let cookStr = item.cookType ? `(${item.cookType})` : "";
             let sizeStr = item.size ? `[${item.size}]` : "";
-            message += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE\n`;
+            let comboStr = item.hasCombo ? `\n   ➕ شامل العرض: ${item.quantity}x كومبو (بطاطس + بيبسي)` : "";
+            
+            message += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE${comboStr}\n`;
         });
 
         message += `-------------------\n`;
