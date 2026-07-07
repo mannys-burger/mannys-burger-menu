@@ -10,6 +10,9 @@
     <meta name="theme-color" content="#f0a500">
     <link rel="apple-touch-icon" href="logo.png">
 
+    <!-- مكتبة الواقع المعزز من جوجل -->
+    <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script>
+
     <style>
         :root {
             --primary: #f0a500;
@@ -182,11 +185,41 @@
             max-width: 350px;
             text-align: center;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         .modal-content select {
             width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px;
             border: 1px solid var(--border); font-size: 16px; font-family: inherit;
         }
+
+        /* Quantity Controls */
+        .qty-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin: 15px 0;
+            background: var(--bg);
+            padding: 10px;
+            border-radius: 8px;
+        }
+        .qty-btn {
+            background: var(--dark);
+            color: var(--light);
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .qty-btn:active { transform: scale(0.9); }
+        .qty-number { font-size: 20px; font-weight: bold; min-width: 30px; }
         
         /* Cart */
         .cart-item {
@@ -220,12 +253,10 @@
         <div id="pwa-install-section">
             <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: #155724; font-size: 15px;"></p>
             
-            <!-- زرار الأندرويد -->
             <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
                 📲 نزل الأبلكيشن دلوقتي
             </button>
             
-            <!-- رسالة الآيفون -->
             <div id="ios-instructions" style="display: none; color: #155724; font-size: 14px; line-height: 1.6;">
                 لتثبيت التطبيق على الآيفون: <br>
                 اضغط على زر المشاركة <span style="font-size: 18px; font-weight: bold;">⍗</span> أسفل الشاشة <br>
@@ -281,9 +312,20 @@
     </div>
 </div>
 
+<!-- بوب أب اختيار الصنف -->
 <div class="modal-overlay" id="item-modal">
     <div class="modal-content">
         <h3 id="modal-item-name">اسم الصنف</h3>
+        
+        <!-- حاوية الـ 3D والواقع المعزز -->
+        <div id="ar-container" style="display: none; height: 220px; margin: 10px 0; border-radius: 10px; overflow: hidden; box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);">
+            <model-viewer src="https://modelviewer.dev/shared-assets/models/burger.glb" ar ar-modes="webxr scene-viewer quick-look" camera-controls tone-mapping="neutral" auto-rotate shadow-intensity="1" style="width: 100%; height: 100%; background-color: #f2f4f7;">
+                <button slot="ar-button" style="background-color: #f0a500; color: #222; border: none; border-radius: 5px; padding: 10px 20px; position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); font-weight: bold; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2);">
+                    👁️ شوفه على ترابيزتك (AR)
+                </button>
+            </model-viewer>
+        </div>
+
         <label style="font-weight: bold; font-size:14px; text-align:right; display:block;">اختار الحجم/السعر:</label>
         <select id="modal-size-select"></select>
         
@@ -293,6 +335,14 @@
                 <option value="مقلي">مقلي</option>
                 <option value="مشوي">مشوي</option>
             </select>
+        </div>
+
+        <!-- أزرار التحكم في العدد -->
+        <label style="font-weight: bold; font-size:14px; text-align:right; display:block; margin-top:10px;">الكمية:</label>
+        <div class="qty-controls">
+            <button class="qty-btn" onclick="changeModalQty(1)">+</button>
+            <span id="modal-qty-display" class="qty-number">1</span>
+            <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
         </div>
 
         <button class="btn" onclick="addToCart()">➕ أضف للسلة</button>
@@ -393,6 +443,7 @@
     let cart = [];
     let activeCategory = "Beef";
     let selectedItemIndex = null;
+    let currentModalQty = 1;
     
     const WHATSAPP_NUMBER = "201070500094"; 
 
@@ -482,8 +533,18 @@
 
     function openModal(index) {
         selectedItemIndex = index;
+        currentModalQty = 1; // تصفير العدد كل مرة يفتح ساندوتش جديد
+        document.getElementById("modal-qty-display").innerText = currentModalQty;
+
         const item = menuData[index];
         document.getElementById("modal-item-name").innerText = item.name;
+        
+        // إظهار أو إخفاء مجسم الـ 3D بناءً على القسم
+        if (item.category === "Beef" || item.category === "Chicken") {
+            document.getElementById("ar-container").style.display = "block";
+        } else {
+            document.getElementById("ar-container").style.display = "none";
+        }
         
         const sizeSelect = document.getElementById("modal-size-select");
         sizeSelect.innerHTML = "";
@@ -499,6 +560,13 @@
             document.getElementById("modal-cook-group").style.display = "none";
         }
         document.getElementById("item-modal").style.display = "flex";
+    }
+
+    function changeModalQty(delta) {
+        if (currentModalQty + delta >= 1) {
+            currentModalQty += delta;
+            document.getElementById("modal-qty-display").innerText = currentModalQty;
+        }
     }
 
     function closeModal() {
@@ -518,12 +586,23 @@
             cookType = document.getElementById("modal-cook-select").value;
         }
 
-        cart.push({
-            name: item.name,
-            size: size === "One Size" ? "" : size,
-            price: parseInt(price),
-            cookType: cookType
-        });
+        let parsedPrice = parseInt(price);
+        let cleanSize = size === "One Size" ? "" : size;
+
+        // التحقق لو الساندوتش ده موجود بنفس المواصفات نزود عدده بس
+        let existingItem = cart.find(i => i.name === item.name && i.size === cleanSize && i.cookType === cookType);
+        
+        if (existingItem) {
+            existingItem.quantity += currentModalQty;
+        } else {
+            cart.push({
+                name: item.name,
+                size: cleanSize,
+                price: parsedPrice,
+                cookType: cookType,
+                quantity: currentModalQty
+            });
+        }
 
         playCategorySound(item.category);
         updateCartCount();
@@ -531,7 +610,19 @@
     }
 
     function updateCartCount() {
-        document.getElementById("cart-count").innerText = cart.length;
+        // حساب إجمالي عدد القطع في السلة
+        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+        document.getElementById("cart-count").innerText = totalItems;
+    }
+
+    function changeCartItemQty(index, delta) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) {
+            removeFromCart(index);
+        } else {
+            renderCart();
+            updateCartCount();
+        }
     }
 
     function showCart() {
@@ -557,16 +648,25 @@
         let total = 0;
 
         cart.forEach((item, i) => {
-            total += item.price;
+            let itemTotal = item.price * item.quantity;
+            total += itemTotal;
+            
             let cookStr = item.cookType ? `(${item.cookType})` : "";
             let sizeStr = item.size ? `[${item.size}]` : "";
             
             container.innerHTML += `
                 <div class="cart-item">
                     <strong style="font-size:16px;">${item.name} ${cookStr} ${sizeStr}</strong> <br>
-                    <span style="font-size:16px; color:#d35400; font-weight:bold;">${item.price} LE</span>
-                    <button onclick="removeFromCart(${i})" style="float:left; color:red; border:1px solid red; background:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
-                    <div style="clear:both;"></div>
+                    <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
+                        <div class="qty-controls" style="margin: 0; padding: 0; background: none;">
+                            <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, 1)">+</button>
+                            <span class="qty-number" style="font-size: 18px;">${item.quantity}</span>
+                            <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, -1)">-</button>
+                        </div>
+                        <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
+                    </div>
                 </div>`;
         });
         
@@ -620,10 +720,11 @@
         message += `*الطلب:*\n\n`;
 
         cart.forEach(item => {
-            total += item.price;
+            let itemTotal = item.price * item.quantity;
+            total += itemTotal;
             let cookStr = item.cookType ? `(${item.cookType})` : "";
             let sizeStr = item.size ? `[${item.size}]` : "";
-            message += `▪️ 1x ${item.name} ${cookStr} ${sizeStr} - ${item.price}LE\n`;
+            message += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE\n`;
         });
 
         message += `-------------------\n`;
@@ -645,38 +746,32 @@
      كود تطبيق الموبايل (PWA) الذكي للآيفون والأندرويد
      ========================================== -->
 <script>
-    // 1. تسجيل الـ Service Worker
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
             navigator.serviceWorker.register('sw.js').catch(() => console.log('SW Failed'));
         });
     }
 
-    // 2. إعدادات كشف الموبايل وزرار التحميل
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    const isStandalone = window.navigator.standalone === true; // بيشوف لو الأبلكيشن نازل فعلاً على الآيفون
-    const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches; // بيشوف لو نازل على الأندرويد
+    const isStandalone = window.navigator.standalone === true; 
+    const isAndroidStandalone = window.matchMedia('(display-mode: standalone)').matches; 
 
     const pwaSection = document.getElementById('pwa-install-section');
     const pwaText = document.getElementById('pwa-text');
     const androidBtn = document.getElementById('android-install-btn');
     const iosInstructions = document.getElementById('ios-instructions');
 
-    // لو العميل آيفون ولسه منزلش الأبلكيشن
     if (isIOS && !isStandalone) {
         pwaSection.style.display = 'block';
         pwaText.innerText = "أضف مانيز لموبايلك لطلب أسرع! 🍔";
         iosInstructions.style.display = 'block';
     }
 
-    // لو العميل أندرويد ولسه منزلش الأبلكيشن (جوجل كروم بيبعت الحدث ده)
     let deferredPrompt;
     window.addEventListener('beforeinstallprompt', (e) => {
-        // منع كروم من إظهار الرسالة التلقائية
         e.preventDefault();
         deferredPrompt = e;
         
-        // إظهار القسم والزرار الأخضر
         if(!isAndroidStandalone){
             pwaSection.style.display = 'block';
             pwaText.innerText = "نزل أبلكيشن مانيز واطلب بضغطة واحدة! 🍔";
@@ -684,13 +779,12 @@
         }
     });
 
-    // لما العميل يدوس على الزرار الأخضر (للأندرويد)
     androidBtn.addEventListener('click', async () => {
         if (deferredPrompt !== null) {
             deferredPrompt.prompt();
             const { outcome } = await deferredPrompt.userChoice;
             if (outcome === 'accepted') {
-                pwaSection.style.display = 'none'; // نخفي الزرار بعد التحميل
+                pwaSection.style.display = 'none'; 
             }
             deferredPrompt = null;
         }
