@@ -2,12 +2,11 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Manny's Burger Order System</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f0a500">
-    <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#f2f4f7" id="meta-theme-color"> <link rel="apple-touch-icon" href="logo.png">
 
     <style>
         /* المتغيرات الأساسية للوضع العادي (الفاتح) */
@@ -26,7 +25,7 @@
         }
 
         /* المتغيرات الخاصة بالوضع الليلي (الغامق) */
-        body.dark-mode {
+        html.dark-mode, body.dark-mode {
             --dark: #f8f9fa;
             --light: #222;
             --bg: #121212;
@@ -39,6 +38,14 @@
             --muted-text: #aaa;
         }
 
+        /* التعديل هنا: حل مشكلة سفاري والآيفون */
+        html {
+            background-color: var(--bg);
+            transition: background-color 0.3s;
+            min-height: 100%;
+            height: -webkit-fill-available;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
@@ -47,6 +54,8 @@
             padding-bottom: 80px; 
             color: var(--dark);
             transition: background-color 0.3s, color 0.3s;
+            min-height: 100vh;
+            min-height: -webkit-fill-available; /* حل الآيفون السحري */
         }
 
         /* خلفية اللوجو المائية (الوضع الفاتح) */
@@ -67,7 +76,7 @@
 
         /* خلفية اللوجو المائية (الوضع الليلي) */
         body.dark-mode::before {
-            background-image: url('logo-dark.png'); /* ارفع الصورة بتاعتك بالاسم ده على جيت هاب */
+            background-image: url('logo-dark.png'); 
             opacity: 0.05; 
         }
 
@@ -322,7 +331,6 @@
             border-top: 2px solid var(--primary); 
         }
 
-        /* تعديل زرار السلة في الدارك مود فقط */
         body.dark-mode #view-cart-btn {
             background-color: var(--primary);
             color: #ffffff;
@@ -545,13 +553,21 @@
     const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
 
     // ==========================================
-    // زرار الدارك مود والذاكرة بتاعته
+    // زرار الدارك مود والذاكرة بتاعته + تلوين نوتش الآيفون
     // ==========================================
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
+        document.documentElement.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
+        
         localStorage.setItem('mannys_theme', isDark ? 'dark' : 'light');
         document.getElementById('theme-toggle').innerText = isDark ? '☀️' : '🌙';
+
+        // تلوين شريط إشعارات الآيفون (Notch)
+        const metaThemeColor = document.getElementById('meta-theme-color');
+        if (metaThemeColor) {
+            metaThemeColor.setAttribute('content', isDark ? '#121212' : '#f2f4f7');
+        }
     }
 
     // ==========================================
@@ -561,7 +577,12 @@
         const savedTheme = localStorage.getItem('mannys_theme');
         if (savedTheme === 'dark') {
             document.body.classList.add('dark-mode');
+            document.documentElement.classList.add('dark-mode');
             document.getElementById('theme-toggle').innerText = '☀️';
+            const metaThemeColor = document.getElementById('meta-theme-color');
+            if (metaThemeColor) {
+                metaThemeColor.setAttribute('content', '#121212');
+            }
         }
 
         const legacyCustStr = localStorage.getItem('mannys_customer');
