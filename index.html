@@ -6,7 +6,8 @@
     <title>Manny's Burger Order System</title>
     
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#f2f4f7" id="meta-theme-color"> <link rel="apple-touch-icon" href="logo.png">
+    <meta name="theme-color" content="#f2f4f7" id="meta-theme-color"> 
+    <link rel="apple-touch-icon" href="logo.png">
 
     <style>
         /* المتغيرات الأساسية للوضع العادي (الفاتح) */
@@ -416,7 +417,9 @@
 
 <div class="modal-overlay" id="item-modal">
     <div class="modal-content">
-        <h3 id="modal-item-name">اسم الصنف</h3>
+        <h3 id="modal-item-name" style="margin-bottom: 5px;">اسم الصنف</h3>
+        
+        <p id="modal-item-desc" style="font-size: 13px; color: var(--muted-text); margin-top: 0; margin-bottom: 15px; text-align: center; line-height: 1.4; display: none;"></p>
         
         <div id="ar-container" style="display: none;"></div>
 
@@ -478,30 +481,30 @@
     }
 
     // ==========================================
-    // قاعدة البيانات
+    // قاعدة البيانات المُحدثة (تم إضافة وصف الساندوتشات بالكامل)
     // ==========================================
     const menuData = [
-        { category: "Beef", name: "Classic Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 120, "250g": 170, "300g": 190, "400g": 240 }, Sharm: { "150g": 140, "250g": 200, "300g": 220, "400g": 270 } } },
-        { category: "Beef", name: "Caramelized Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 140, "250g": 190, "300g": 210, "400g": 260 }, Sharm: { "150g": 160, "250g": 220, "300g": 240, "400g": 290 } } },
-        { category: "Beef", name: "White Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 155, "250g": 205, "300g": 225, "400g": 275 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
-        { category: "Beef", name: "New York Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
-        { category: "Beef", name: "Fire Bite Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 165, "250g": 215, "300g": 235, "400g": 285 }, Sharm: { "150g": 185, "250g": 245, "300g": 265, "400g": 315 } } },
-        { category: "Beef", name: "Boskino Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 170, "250g": 220, "300g": 240, "400g": 290 }, Sharm: { "150g": 190, "250g": 250, "300g": 270, "400g": 320 } } },
-        { category: "Beef", name: "Texas Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
-        { category: "Beef", name: "Mushroom Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 150, "250g": 200, "300g": 220, "400g": 270 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
-        { category: "Beef", name: "Smoked Burger", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
+        { category: "Beef", name: "Classic Burger", desc: "برجر، شريحة جبن أمريكي، صوص ماني، صوص باربيكيو، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 120, "250g": 170, "300g": 190, "400g": 240 }, Sharm: { "150g": 140, "250g": 200, "300g": 220, "400g": 270 } } },
+        { category: "Beef", name: "Caramelized Burger", desc: "برجر، شريحة جبن أمريكي، بصل مكرمل، صوص ماني، صوص باربيكيو، خس، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 140, "250g": 190, "300g": 210, "400g": 260 }, Sharm: { "150g": 160, "250g": 220, "300g": 240, "400g": 290 } } },
+        { category: "Beef", name: "White Burger", desc: "برجر، شريحة جبن أمريكي، بيف بيكون بقري، صوص رانش، صوص ماني، خس، طماطم، بصل، خيار", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 155, "250g": 205, "300g": 225, "400g": 275 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
+        { category: "Beef", name: "New York Burger", desc: "برجر، شريحة جبن أمريكي، لحم مفروم مطهي، صوص ماني، صوص نيويورك، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
+        { category: "Beef", name: "Fire Bite Burger", desc: "برجر، شريحة جبن أمريكي، لحم مفروم، صوص فاير، صوص ماني، فلفل هالبينو، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 165, "250g": 215, "300g": 235, "400g": 285 }, Sharm: { "150g": 185, "250g": 245, "300g": 265, "400g": 315 } } },
+        { category: "Beef", name: "Boskino Burger", desc: "برجر، شريحة جبن أمريكي، لحم بقرى مدخن، أصابع شيدر هالبينو، صوص الشيدر، صوص باربيكيو، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 170, "250g": 220, "300g": 240, "400g": 290 }, Sharm: { "150g": 190, "250g": 250, "300g": 270, "400g": 320 } } },
+        { category: "Beef", name: "Texas Burger", desc: "برجر، شريحة جبن أمريكي، هوت دوج مشوي، صوص تكساس، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
+        { category: "Beef", name: "Mushroom Burger", desc: "برجر، شريحة جبن أمريكي، مشروم، صوص مشروم، صوص ماني", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 150, "250g": 200, "300g": 220, "400g": 270 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
+        { category: "Beef", name: "Smoked Burger", desc: "برجر، شريحة جبن أمريكي، تركي مدخن، حلقات بصل مقلية، صوص باربيكيو، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
         { category: "Beef", name: "Smash Burger", sizes: ["Double", "Triple"], prices: { Faisal: { "Double": 200, "Triple": 250 }, Sharm: { "Double": 240, "Triple": 290 } } },
-        { category: "Chicken", name: "Classic Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 110, "Double": 160, "Triple": 210 }, Sharm: { "Single": 120, "Double": 170, "Triple": 220 } } },
-        { category: "Chicken", name: "Supreme Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 125, "Double": 175, "Triple": 225 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Ranch Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
-        { category: "Chicken", name: "RBJ Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 140, "Double": 190, "Triple": 240 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Chili Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "NASA Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Magnum Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
-        { category: "Chicken", name: "Chicken Yellow", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Classic Chicken", desc: "فراخ، صوص ماني، صوص الجبنة الشيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 110, "Double": 160, "Triple": 210 }, Sharm: { "Single": 120, "Double": 170, "Triple": 220 } } },
+        { category: "Chicken", name: "Supreme Chicken", desc: "فراخ، تركي مدخن، صوص باربيكيو، صوص ماني، صوص الجبنة الشيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 125, "Double": 175, "Triple": 225 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Ranch Chicken", desc: "فراخ، بيف بيكون بقرى، صوص رانش، صوص جبنة شيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
+        { category: "Chicken", name: "RBJ Chicken", desc: "فراخ، لحم بقرى مدخن، صوص بافللو، صوص رانش، صوص جبنة، صوص مانى، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 140, "Double": 190, "Triple": 240 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Chili Chicken", desc: "فراخ، لحم بقرى مدخن، صوص تشيلي، صوص جبنة، صوص ماني، فلفل هالبينو، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "NASA Chicken", desc: "فراخ، لحم تركي مدخن، صوص تكساس، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
+        { category: "Chicken", name: "Magnum Chicken", desc: "فراخ، لحم تركي مدخن، أصابع موتزاريلا، صوص باربيكيو، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
+        { category: "Chicken", name: "Chicken Yellow", desc: "فراخ، لحم تركي مدخن، صوص هاني مسطردة، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
         { category: "Chicken", name: "Mano Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 100, "Double": 150, "Triple": 200 }, Sharm: { "Single": 120, "Double": 180, "Triple": 240 } } },
-        { category: "Sandwich", name: "Smoked Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 110 }, Sharm: { "One Size": 120 } } },
-        { category: "Sandwich", name: "Classic Hotdog", sizes: ["One Size"], prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
+        { category: "Sandwich", name: "Smoked Hotdog", desc: "هوت دوج، بيف بيكون بقرى، صوص تكساس، خس", sizes: ["One Size"], prices: { Faisal: { "One Size": 110 }, Sharm: { "One Size": 120 } } },
+        { category: "Sandwich", name: "Classic Hotdog", desc: "هوت دوج، مسطردة، خس", sizes: ["One Size"], prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
         { category: "Sandwich", name: "Chicken Wrap", sizes: ["One Size"], needsCookingType: true, prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
         { category: "Sandwich", name: "Loaded Fries Wrap", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 90 } } },
         { category: "Fries", name: "Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
@@ -717,6 +720,15 @@
 
         const item = menuData[index];
         document.getElementById("modal-item-name").innerText = item.name;
+        
+        // جلب الشرح وعرضه لو متاح
+        const descElement = document.getElementById("modal-item-desc");
+        if (item.desc) {
+            descElement.innerText = item.desc;
+            descElement.style.display = "block";
+        } else {
+            descElement.style.display = "none";
+        }
         
         const sizeSelect = document.getElementById("modal-size-select");
         sizeSelect.innerHTML = "";
