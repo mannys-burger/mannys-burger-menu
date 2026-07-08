@@ -5,22 +5,40 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manny's Burger Order System</title>
     
-    <!-- إعدادات تطبيق الموبايل (PWA) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f0a500">
     <link rel="apple-touch-icon" href="logo.png">
 
-    <!-- مكتبة الواقع المعزز (موقوفة مؤقتاً) -->
-    <!-- <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script> -->
-
     <style>
+        /* المتغيرات الأساسية للوضع العادي (الفاتح) */
         :root {
             --primary: #f0a500;
             --dark: #222;
             --light: #fff;
             --bg: #f2f4f7;
             --border: #dcdcdc;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --input-bg: #fff;
+            --upsell-bg: #fff9e6;
+            --success-bg: #e8f5e9;
+            --success-text: #155724;
+            --muted-text: #555;
         }
+
+        /* المتغيرات الخاصة بالوضع الليلي (الغامق) */
+        body.dark-mode {
+            --dark: #f8f9fa;
+            --light: #222;
+            --bg: #121212;
+            --border: #444;
+            --card-bg: rgba(30, 30, 30, 0.95);
+            --input-bg: #2a2a2a;
+            --upsell-bg: #2a220b;
+            --success-bg: #122b16;
+            --success-text: #4caf50;
+            --muted-text: #aaa;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
@@ -28,6 +46,7 @@
             padding: 0;
             padding-bottom: 80px; 
             color: var(--dark);
+            transition: background-color 0.3s, color 0.3s;
         }
 
         /* خلفية اللوجو المائية */
@@ -53,6 +72,27 @@
         }
         h1, h2, h3 { text-align: center; }
         
+        /* Theme Toggle Button */
+        #theme-toggle {
+            position: fixed;
+            top: 15px;
+            left: 15px;
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            width: 45px;
+            height: 45px;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: 0.3s;
+        }
+        #theme-toggle:active { transform: scale(0.9); }
+
         /* Buttons */
         .btn {
             display: block;
@@ -60,7 +100,7 @@
             padding: 12px;
             margin: 10px 0;
             background-color: var(--primary);
-            color: var(--dark);
+            color: #222; /* دايما غامق عشان زرار أصفر */
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -72,7 +112,6 @@
         .btn-secondary { background-color: var(--dark); color: var(--light); }
         .btn-danger { background-color: #dc3545; color: white; }
 
-        /* نبض الزرار الأخضر */
         @keyframes pulse {
             0% { transform: scale(1); }
             50% { transform: scale(1.02); }
@@ -85,7 +124,7 @@
         /* PWA Install Section */
         #pwa-install-section {
             display: none;
-            background-color: #e8f5e9;
+            background-color: var(--success-bg);
             border: 2px solid #28a745;
             padding: 15px;
             border-radius: 10px;
@@ -104,6 +143,7 @@
             text-align: center;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             border: 2px solid var(--primary);
+            color: #222;
         }
 
         /* Menu Layout */
@@ -116,7 +156,7 @@
         .sidebar {
             width: 90px;
             flex-shrink: 0;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--card-bg);
             border-radius: 8px;
             padding: 5px;
             height: fit-content;
@@ -132,11 +172,12 @@
             font-size: 12px;
             font-weight: bold;
             transition: 0.2s;
+            color: var(--dark);
         }
         .cat-tab:last-child { border-bottom: none; }
         .cat-tab.active {
             background-color: var(--primary);
-            color: var(--dark);
+            color: #222;
             border-radius: 5px;
         }
 
@@ -149,7 +190,7 @@
         }
 
         .item-btn {
-            background-color: rgba(253, 253, 253, 0.95);
+            background-color: var(--card-bg);
             border: 2px solid #eab543;
             border-radius: 6px;
             padding: 15px 5px;
@@ -171,26 +212,28 @@
         .modal-overlay {
             position: fixed;
             top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.6);
+            background: rgba(0,0,0,0.7);
             display: none;
             justify-content: center;
             align-items: center;
             z-index: 1000;
         }
         .modal-content {
-            background: var(--light);
+            background: var(--card-bg);
+            color: var(--dark);
             padding: 20px;
             border-radius: 12px;
             width: 90%;
             max-width: 350px;
             text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
             max-height: 90vh;
             overflow-y: auto;
         }
         .modal-content select {
             width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px;
             border: 1px solid var(--border); font-size: 16px; font-family: inherit;
+            background: var(--input-bg); color: var(--dark);
         }
 
         /* Quantity Controls */
@@ -219,17 +262,18 @@
             justify-content: center;
         }
         .qty-btn:active { transform: scale(0.9); }
-        .qty-number { font-size: 20px; font-weight: bold; min-width: 30px; }
+        .qty-number { font-size: 20px; font-weight: bold; min-width: 30px; color: var(--dark); }
         
         /* Cart */
         .cart-item {
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--card-bg);
             border-radius: 8px; padding: 15px; margin-bottom: 10px;
             border: 1px solid var(--border);
+            color: var(--dark);
         }
         .total-price { 
             font-size: 20px; font-weight: bold; text-align: center; 
-            padding: 15px; background: var(--primary); border-radius: 8px; margin: 15px 0;
+            padding: 15px; background: var(--primary); border-radius: 8px; margin: 15px 0; color: #222;
         }
         
         /* Forms & Address Book */
@@ -237,12 +281,14 @@
         .form-group input, .form-group textarea {
             width: 100%; padding: 10px; border: 1px solid var(--border);
             border-radius: 5px; box-sizing: border-box; font-family: inherit;
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--input-bg);
+            color: var(--dark);
         }
 
         .address-chip {
-            background: #fff;
+            background: var(--input-bg);
             border: 2px solid var(--primary);
+            color: var(--dark);
             border-radius: 8px;
             padding: 8px 12px;
             font-size: 14px;
@@ -264,24 +310,24 @@
 </head>
 <body>
 
+<button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+
 <div class="container">
     <div id="branch-screen">
         <h1>Manny's Burger 🍔</h1>
 
-        <!-- قسم تحميل التطبيق (PWA) الذكي -->
         <div id="pwa-install-section">
-            <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: #155724; font-size: 15px;"></p>
+            <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: var(--success-text); font-size: 15px;"></p>
             <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
                 📲 نزل الأبلكيشن دلوقتي
             </button>
-            <div id="ios-instructions" style="display: none; color: #155724; font-size: 14px; line-height: 1.6;">
+            <div id="ios-instructions" style="display: none; color: var(--success-text); font-size: 14px; line-height: 1.6;">
                 لتثبيت التطبيق على الآيفون: <br>
                 اضغط على زر المشاركة <span style="font-size: 18px; font-weight: bold;">⍗</span> أسفل الشاشة <br>
                 ثم اختر <strong>Add to Home Screen ➕</strong>
             </div>
         </div>
         
-        <!-- قسم الذاكرة الذكية -->
         <div id="welcome-back-section">
             <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
             <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
@@ -319,11 +365,10 @@
         <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم (هيتسجل لمرة واحدة)" required></div>
         <div class="form-group"><input type="tel" id="cust-phone" placeholder="رقم الموبايل" required></div>
         
-        <!-- دفتر العناوين الذكي -->
         <div id="address-book" style="display:none; margin: 15px 0;">
             <label style="font-weight: bold; font-size:14px; color: #d35400;">اختار من عناوينك المتسجلة:</label>
             <div id="saved-addresses-list" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;"></div>
-            <label style="font-size:12px; color: #555;">أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇</label>
+            <label style="font-size:12px; color: var(--muted-text);">أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇</label>
         </div>
 
         <div class="form-group"><input type="text" id="cust-street" placeholder="الشارع أو المنطقة (مثال: الطالبية أو المريوطية)" required></div>
@@ -339,7 +384,6 @@
     </div>
 </div>
 
-<!-- بوب أب اختيار الصنف -->
 <div class="modal-overlay" id="item-modal">
     <div class="modal-content">
         <h3 id="modal-item-name">اسم الصنف</h3>
@@ -369,9 +413,8 @@
     </div>
 </div>
 
-<!-- بوب أب عرض الكومبو (Upsell Modal) -->
 <div class="modal-overlay" id="upsell-modal">
-    <div class="modal-content" style="background-color: #fff9e6; border: 2px solid var(--primary);">
+    <div class="modal-content" style="background-color: var(--upsell-bg); border: 2px solid var(--primary);">
         <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
         <p style="font-size: 16px; font-weight: bold;">ضيف بطاطس وبيبسي مع الساندوتش بـ <span id="upsell-price-display" style="color: #dc3545; font-size: 20px;">0</span> LE بس!</p>
         <button class="btn" style="background-color: #28a745; color: white;" onclick="confirmUpsell(true)">🍟 أيوة، خليها كومبو!</button>
@@ -480,10 +523,26 @@
     const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
 
     // ==========================================
+    // زرار الدارك مود والذاكرة بتاعته
+    // ==========================================
+    function toggleTheme() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('mannys_theme', isDark ? 'dark' : 'light');
+        document.getElementById('theme-toggle').innerText = isDark ? '☀️' : '🌙';
+    }
+
+    // ==========================================
     // الذاكرة الذكية ودفتر العناوين
     // ==========================================
     function checkSmartMemory() {
-        // تحديث للملفات القديمة عشان العميل ميضيعش بياناته
+        // تشغيل الدارك مود لو محفوظ
+        const savedTheme = localStorage.getItem('mannys_theme');
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('theme-toggle').innerText = '☀️';
+        }
+
         const legacyCustStr = localStorage.getItem('mannys_customer');
         if (legacyCustStr && !localStorage.getItem('mannys_profile')) {
             const legacyCust = JSON.parse(legacyCustStr);
@@ -494,7 +553,6 @@
             }
         }
 
-        // قراءة الملف الشخصي (الاسم والتليفون)
         const savedProfileStr = localStorage.getItem('mannys_profile');
         if (savedProfileStr) {
             const profile = JSON.parse(savedProfileStr);
@@ -505,14 +563,12 @@
             document.getElementById("saved-name").innerText = firstName;
         }
 
-        // قراءة دفتر العناوين
         const savedAddrsStr = localStorage.getItem('mannys_addresses');
         if (savedAddrsStr) {
             savedAddressesArray = JSON.parse(savedAddrsStr);
             renderSavedAddresses();
         }
 
-        // قراءة آخر أوردر للترحيب
         const savedOrderStr = localStorage.getItem('mannys_last_order');
         if (savedOrderStr && JSON.parse(savedOrderStr).length > 0 && savedProfileStr) {
             document.getElementById("welcome-back-section").style.display = "block";
@@ -545,9 +601,6 @@
         document.getElementById("cust-landmark").value = addr.landmark || "";
     }
 
-    // ==========================================
-    // التعديل الخاص بإعادة الطلب (حل المشكلة)
-    // ==========================================
     function reorderLastTime() {
         const savedOrderStr = localStorage.getItem('mannys_last_order');
         const savedCustStr = localStorage.getItem('mannys_customer');
@@ -555,7 +608,6 @@
         if (savedOrderStr) {
             cart = JSON.parse(savedOrderStr);
             
-            // قراءة الفرع القديم لو متسجل، أو افتراضي فيصل
             if (savedCustStr) {
                 const cust = JSON.parse(savedCustStr);
                 currentBranch = cust.branch || 'Faisal';
@@ -563,12 +615,10 @@
                 currentBranch = 'Faisal'; 
             }
             
-            // تجهيز المنيو في الخلفية عشان لو العميل داس رجوع يلاقيه شغال
             document.getElementById("branch-name-display").innerText = currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
             renderSidebar();
             renderMenuGrid();
             
-            // الانتقال للسلة
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
             
@@ -775,7 +825,7 @@
                             <span class="qty-number" style="font-size: 18px;">${item.quantity}</span>
                             <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, -1)">-</button>
                         </div>
-                        <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:#fff; padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
+                        <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:var(--input-bg); padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
                     </div>
                 </div>`;
         });
@@ -815,24 +865,20 @@
         const landmark = document.getElementById("cust-landmark").value;
         const globalNote = document.getElementById("global-note").value;
 
-        // 1. حفظ البروفايل (الاسم والتليفون)
         localStorage.setItem('mannys_profile', JSON.stringify({name, phone}));
 
-        // 2. إدارة دفتر العناوين (تجنب التكرار والاحتفاظ بآخر 3)
         const currentAddr = { street, building, floor, apt, landmark };
         const isExist = savedAddressesArray.some(a => a.street === street && a.building === building && a.apt === apt);
         
         if (!isExist) {
-            savedAddressesArray.unshift(currentAddr); // يحط الجديد في الأول
-            if (savedAddressesArray.length > 3) savedAddressesArray.pop(); // يمسح القديم لو زادوا عن 3
+            savedAddressesArray.unshift(currentAddr); 
+            if (savedAddressesArray.length > 3) savedAddressesArray.pop(); 
             localStorage.setItem('mannys_addresses', JSON.stringify(savedAddressesArray));
         }
 
-        // 3. حفظ بيانات العميل لزرار الترحيب
         const customerData = { branch: currentBranch };
         localStorage.setItem('mannys_customer', JSON.stringify(customerData));
 
-        // 4. حفظ آخر أوردر
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
         const categoryPriority = {
@@ -883,9 +929,6 @@
     }
 </script>
 
-<!-- ==========================================
-     كود تطبيق الموبايل (PWA) الذكي للآيفون والأندرويد
-     ========================================== -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
