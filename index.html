@@ -5,9 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Manny's Burger Order System</title>
     
+    <!-- إعدادات تطبيق الموبايل (PWA) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#f0a500">
     <link rel="apple-touch-icon" href="logo.png">
+
+    <!-- مكتبة الواقع المعزز (موقوفة مؤقتاً) -->
+    <!-- <script type="module" src="https://ajax.googleapis.com/ajax/libs/model-viewer/4.0.0/model-viewer.min.js"></script> -->
 
     <style>
         :root {
@@ -251,7 +255,7 @@
         }
         .address-chip:active { transform: scale(0.95); background-color: var(--bg); }
         
-        #saved-addresses-list::-webkit-scrollbar { display: none; } /* إخفاء شريط التمرير */
+        #saved-addresses-list::-webkit-scrollbar { display: none; }
         
         #view-cart-btn {
             position: fixed; bottom: 0; left: 0; width: 100%; margin: 0; border-radius: 0; z-index: 100;
@@ -264,6 +268,7 @@
     <div id="branch-screen">
         <h1>Manny's Burger 🍔</h1>
 
+        <!-- قسم تحميل التطبيق (PWA) الذكي -->
         <div id="pwa-install-section">
             <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: #155724; font-size: 15px;"></p>
             <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
@@ -276,6 +281,7 @@
             </div>
         </div>
         
+        <!-- قسم الذاكرة الذكية -->
         <div id="welcome-back-section">
             <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
             <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
@@ -313,6 +319,7 @@
         <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم (هيتسجل لمرة واحدة)" required></div>
         <div class="form-group"><input type="tel" id="cust-phone" placeholder="رقم الموبايل" required></div>
         
+        <!-- دفتر العناوين الذكي -->
         <div id="address-book" style="display:none; margin: 15px 0;">
             <label style="font-weight: bold; font-size:14px; color: #d35400;">اختار من عناوينك المتسجلة:</label>
             <div id="saved-addresses-list" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;"></div>
@@ -332,6 +339,7 @@
     </div>
 </div>
 
+<!-- بوب أب اختيار الصنف -->
 <div class="modal-overlay" id="item-modal">
     <div class="modal-content">
         <h3 id="modal-item-name">اسم الصنف</h3>
@@ -361,6 +369,7 @@
     </div>
 </div>
 
+<!-- بوب أب عرض الكومبو (Upsell Modal) -->
 <div class="modal-overlay" id="upsell-modal">
     <div class="modal-content" style="background-color: #fff9e6; border: 2px solid var(--primary);">
         <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
@@ -536,13 +545,30 @@
         document.getElementById("cust-landmark").value = addr.landmark || "";
     }
 
+    // ==========================================
+    // التعديل الخاص بإعادة الطلب (حل المشكلة)
+    // ==========================================
     function reorderLastTime() {
         const savedOrderStr = localStorage.getItem('mannys_last_order');
+        const savedCustStr = localStorage.getItem('mannys_customer');
         
         if (savedOrderStr) {
             cart = JSON.parse(savedOrderStr);
-            currentBranch = 'Faisal'; 
             
+            // قراءة الفرع القديم لو متسجل، أو افتراضي فيصل
+            if (savedCustStr) {
+                const cust = JSON.parse(savedCustStr);
+                currentBranch = cust.branch || 'Faisal';
+            } else {
+                currentBranch = 'Faisal'; 
+            }
+            
+            // تجهيز المنيو في الخلفية عشان لو العميل داس رجوع يلاقيه شغال
+            document.getElementById("branch-name-display").innerText = currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
+            renderSidebar();
+            renderMenuGrid();
+            
+            // الانتقال للسلة
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
             
@@ -802,7 +828,11 @@
             localStorage.setItem('mannys_addresses', JSON.stringify(savedAddressesArray));
         }
 
-        // 3. حفظ آخر أوردر
+        // 3. حفظ بيانات العميل لزرار الترحيب
+        const customerData = { branch: currentBranch };
+        localStorage.setItem('mannys_customer', JSON.stringify(customerData));
+
+        // 4. حفظ آخر أوردر
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
         const categoryPriority = {
@@ -853,6 +883,9 @@
     }
 </script>
 
+<!-- ==========================================
+     كود تطبيق الموبايل (PWA) الذكي للآيفون والأندرويد
+     ========================================== -->
 <script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
