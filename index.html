@@ -227,12 +227,31 @@
             font-size: 20px; font-weight: bold; text-align: center; 
             padding: 15px; background: var(--primary); border-radius: 8px; margin: 15px 0;
         }
+        
+        /* Forms & Address Book */
         .form-group { margin-bottom: 12px; }
         .form-group input, .form-group textarea {
             width: 100%; padding: 10px; border: 1px solid var(--border);
             border-radius: 5px; box-sizing: border-box; font-family: inherit;
             background: rgba(255, 255, 255, 0.9);
         }
+
+        .address-chip {
+            background: #fff;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: 14px;
+            font-weight: bold;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            transition: 0.2s;
+            flex-shrink: 0;
+        }
+        .address-chip:active { transform: scale(0.95); background-color: var(--bg); }
+        
+        #saved-addresses-list::-webkit-scrollbar { display: none; } /* إخفاء شريط التمرير */
         
         #view-cart-btn {
             position: fixed; bottom: 0; left: 0; width: 100%; margin: 0; border-radius: 0; z-index: 100;
@@ -247,11 +266,9 @@
 
         <div id="pwa-install-section">
             <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: #155724; font-size: 15px;"></p>
-            
             <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
                 📲 نزل الأبلكيشن دلوقتي
             </button>
-            
             <div id="ios-instructions" style="display: none; color: #155724; font-size: 14px; line-height: 1.6;">
                 لتثبيت التطبيق على الآيفون: <br>
                 اضغط على زر المشاركة <span style="font-size: 18px; font-weight: bold;">⍗</span> أسفل الشاشة <br>
@@ -293,12 +310,21 @@
         </div>
 
         <h3>بيانات التوصيل</h3>
-        <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم" required></div>
+        <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم (هيتسجل لمرة واحدة)" required></div>
         <div class="form-group"><input type="tel" id="cust-phone" placeholder="رقم الموبايل" required></div>
-        <div class="form-group"><input type="text" id="cust-street" placeholder="الشارع" required></div>
-        <div class="form-group"><input type="text" id="cust-building" placeholder="رقم العمارة"></div>
-        <div class="form-group"><input type="text" id="cust-floor" placeholder="الدور"></div>
-        <div class="form-group"><input type="text" id="cust-apt" placeholder="رقم الشقة"></div>
+        
+        <div id="address-book" style="display:none; margin: 15px 0;">
+            <label style="font-weight: bold; font-size:14px; color: #d35400;">اختار من عناوينك المتسجلة:</label>
+            <div id="saved-addresses-list" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;"></div>
+            <label style="font-size:12px; color: #555;">أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇</label>
+        </div>
+
+        <div class="form-group"><input type="text" id="cust-street" placeholder="الشارع أو المنطقة (مثال: الطالبية أو المريوطية)" required></div>
+        <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1"><input type="text" id="cust-building" placeholder="عمارة"></div>
+            <div class="form-group" style="flex:1"><input type="text" id="cust-floor" placeholder="دور"></div>
+            <div class="form-group" style="flex:1"><input type="text" id="cust-apt" placeholder="شقة"></div>
+        </div>
         <div class="form-group"><input type="text" id="cust-landmark" placeholder="علامة مميزة (اختياري)"></div>
         
         <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب عبر واتساب</button>
@@ -439,44 +465,83 @@
     let selectedItemIndex = null;
     let currentModalQty = 1;
     let pendingItem = null; 
+    let savedAddressesArray = [];
     
     const WHATSAPP_NUMBER = "201070500094"; 
     const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
 
     // ==========================================
-    // الذاكرة الذكية
+    // الذاكرة الذكية ودفتر العناوين
     // ==========================================
     function checkSmartMemory() {
-        const savedCustStr = localStorage.getItem('mannys_customer');
-        const savedOrderStr = localStorage.getItem('mannys_last_order');
-
-        if (savedCustStr) {
-            const cust = JSON.parse(savedCustStr);
-            document.getElementById("cust-name").value = cust.name || "";
-            document.getElementById("cust-phone").value = cust.phone || "";
-            document.getElementById("cust-street").value = cust.street || "";
-            document.getElementById("cust-building").value = cust.building || "";
-            document.getElementById("cust-floor").value = cust.floor || "";
-            document.getElementById("cust-apt").value = cust.apt || "";
-            document.getElementById("cust-landmark").value = cust.landmark || "";
-
-            if (savedOrderStr && JSON.parse(savedOrderStr).length > 0) {
-                const firstName = cust.name.split(' ')[0];
-                document.getElementById("saved-name").innerText = firstName;
-                document.getElementById("welcome-back-section").style.display = "block";
+        // تحديث للملفات القديمة عشان العميل ميضيعش بياناته
+        const legacyCustStr = localStorage.getItem('mannys_customer');
+        if (legacyCustStr && !localStorage.getItem('mannys_profile')) {
+            const legacyCust = JSON.parse(legacyCustStr);
+            localStorage.setItem('mannys_profile', JSON.stringify({name: legacyCust.name, phone: legacyCust.phone}));
+            if (legacyCust.street) {
+                const legacyAddr = { street: legacyCust.street, building: legacyCust.building, floor: legacyCust.floor, apt: legacyCust.apt, landmark: legacyCust.landmark };
+                localStorage.setItem('mannys_addresses', JSON.stringify([legacyAddr]));
             }
+        }
+
+        // قراءة الملف الشخصي (الاسم والتليفون)
+        const savedProfileStr = localStorage.getItem('mannys_profile');
+        if (savedProfileStr) {
+            const profile = JSON.parse(savedProfileStr);
+            document.getElementById("cust-name").value = profile.name || "";
+            document.getElementById("cust-phone").value = profile.phone || "";
+            
+            const firstName = profile.name ? profile.name.split(' ')[0] : "يا فندم";
+            document.getElementById("saved-name").innerText = firstName;
+        }
+
+        // قراءة دفتر العناوين
+        const savedAddrsStr = localStorage.getItem('mannys_addresses');
+        if (savedAddrsStr) {
+            savedAddressesArray = JSON.parse(savedAddrsStr);
+            renderSavedAddresses();
+        }
+
+        // قراءة آخر أوردر للترحيب
+        const savedOrderStr = localStorage.getItem('mannys_last_order');
+        if (savedOrderStr && JSON.parse(savedOrderStr).length > 0 && savedProfileStr) {
+            document.getElementById("welcome-back-section").style.display = "block";
         }
     }
     window.onload = checkSmartMemory;
 
+    function renderSavedAddresses() {
+        if (savedAddressesArray.length === 0) return;
+        
+        document.getElementById("address-book").style.display = "block";
+        const list = document.getElementById("saved-addresses-list");
+        list.innerHTML = "";
+        
+        savedAddressesArray.forEach((addr, i) => {
+            let label = `📍 ${addr.street}`;
+            if(addr.building) label += `، عمارة ${addr.building}`;
+            if(addr.apt) label += `، شقة ${addr.apt}`;
+            
+            list.innerHTML += `<div class="address-chip" onclick="fillSavedAddress(${i})">${label}</div>`;
+        });
+    }
+
+    function fillSavedAddress(index) {
+        const addr = savedAddressesArray[index];
+        document.getElementById("cust-street").value = addr.street || "";
+        document.getElementById("cust-building").value = addr.building || "";
+        document.getElementById("cust-floor").value = addr.floor || "";
+        document.getElementById("cust-apt").value = addr.apt || "";
+        document.getElementById("cust-landmark").value = addr.landmark || "";
+    }
+
     function reorderLastTime() {
         const savedOrderStr = localStorage.getItem('mannys_last_order');
-        const savedCustStr = localStorage.getItem('mannys_customer');
         
-        if (savedOrderStr && savedCustStr) {
+        if (savedOrderStr) {
             cart = JSON.parse(savedOrderStr);
-            const cust = JSON.parse(savedCustStr);
-            currentBranch = cust.branch || 'Faisal';
+            currentBranch = 'Faisal'; 
             
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
@@ -703,7 +768,7 @@
     }
 
     // ==========================================
-    // إرسال الواتساب (مع ترتيب الأصناف بذكاء)
+    // إرسال الواتساب وحفظ العناوين
     // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value;
@@ -724,20 +789,25 @@
         const landmark = document.getElementById("cust-landmark").value;
         const globalNote = document.getElementById("global-note").value;
 
-        const customerData = { name, phone, street, building, floor, apt, landmark, branch: currentBranch };
-        localStorage.setItem('mannys_customer', JSON.stringify(customerData));
+        // 1. حفظ البروفايل (الاسم والتليفون)
+        localStorage.setItem('mannys_profile', JSON.stringify({name, phone}));
+
+        // 2. إدارة دفتر العناوين (تجنب التكرار والاحتفاظ بآخر 3)
+        const currentAddr = { street, building, floor, apt, landmark };
+        const isExist = savedAddressesArray.some(a => a.street === street && a.building === building && a.apt === apt);
+        
+        if (!isExist) {
+            savedAddressesArray.unshift(currentAddr); // يحط الجديد في الأول
+            if (savedAddressesArray.length > 3) savedAddressesArray.pop(); // يمسح القديم لو زادوا عن 3
+            localStorage.setItem('mannys_addresses', JSON.stringify(savedAddressesArray));
+        }
+
+        // 3. حفظ آخر أوردر
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
-        // ترتيب السلة حسب أهمية الأقسام للمطبخ (من غير ما نغير شكل السلة قدام العميل)
         const categoryPriority = {
-            "Beef": 1,
-            "Chicken": 2,
-            "Sandwich": 3,
-            "Fries": 4,
-            "Sides": 5,
-            "Sauces": 6,
-            "Extra": 7,
-            "Drinks": 8
+            "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4,
+            "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8
         };
 
         const sortedCart = [...cart].sort((a, b) => {
@@ -756,7 +826,6 @@
         message += `-------------------\n`;
         message += `*الطلب:*\n\n`;
 
-        // قراءة الأصناف بعد الترتيب الذكي
         sortedCart.forEach(item => {
             let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
             let itemTotal = unitPrice * item.quantity;
