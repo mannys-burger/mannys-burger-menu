@@ -483,7 +483,7 @@
     // ==========================================
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
     // ==========================================
-    const SHEET_API_URL = https://script.google.com/macros/s/AKfycbxcptWMlh1o908YAD2aTpft3QEdrHRRyIl5lTEklKQ4jhQ4Cqs2dFxHOiD0VNMzX3svWA/exec
+   const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxcptWMlh1o9O8YAD2aTpft3QEdrHRRyI15lTEklKQ4jhQ4Cqs2dFxHDiO0VNMzX3svWA/exec";
     
     let menuData = [];
     let currentBranch = "";
@@ -509,30 +509,62 @@
             const response = await fetch(SHEET_API_URL);
             const rawData = await response.json();
             
-            // فلترة الأصناف المتاحة بس وتجهيزها
-            menuData = rawData.filter(row => row.Available === true || row.Available === "TRUE" || row.Available === "true").map(row => {
-                
-                let sizesArr = row.Sizes ? row.Sizes.toString().split(',').map(s => s.trim()) : ["One Size"];
-                let faisalPrices = row.Prices_Faisal ? row.Prices_Faisal.toString().split(',').map(p => parseInt(p.trim())) : [0];
-                let sharmPrices = row.Prices_Sharm ? row.Prices_Sharm.toString().split(',').map(p => parseInt(p.trim())) : [0];
-                
-                let pricesObj = { Faisal: {}, Sharm: {} };
-                sizesArr.forEach((size, idx) => {
-                    pricesObj.Faisal[size] = faisalPrices[idx] || faisalPrices[0] || 0;
-                    pricesObj.Sharm[size] = sharmPrices[idx] || sharmPrices[0] || 0;
-                });
+            menuData = []; // تصفير المنيو القديم
 
-                return {
-                    category: row.Category || "Other",
-                    name: row.Name || "",
-                    desc: row.Description || "",
-                    sizes: sizesArr,
-                    needsCookingType: (row.Needs_Cooking === true || row.Needs_Cooking === "TRUE" || row.Needs_Cooking === "true"),
-                    prices: pricesObj
-                };
+            rawData.forEach((row, index) => {
+                try {
+                    // 1. فحص الإتاحة بأمان تام (بيقبل true, 1, متاح) وبيستبعد (false, 0, فاضي)
+                    let isAvailable = true; 
+                    if (row.Available !== undefined && row.Available !== null) {
+                        let av = String(row.Available).trim().toLowerCase();
+                        if (av === "false" || av === "0" || av === "لا" || av === "") {
+                            isAvailable = false;
+                        }
+                    }
+
+                    // لو الصنف مش متاح، نتخطاه فوراً وميكملش قراءة باقي بياناته عشان ميعلقش السيستم
+                    if (!isAvailable) return;
+
+                    // 2. قراءة الأحجام والأسعار بأمان (عشان لو نسيت تكتب سعر ميضربش إيرور)
+                    let sizesArr = (row.Sizes !== undefined && row.Sizes !== "") ? String(row.Sizes).split(',').map(s => s.trim()) : ["One Size"];
+                    let faisalPrices = (row.Prices_Faisal !== undefined && row.Prices_Faisal !== "") ? String(row.Prices_Faisal).split(',').map(p => parseInt(p.trim()) || 0) : [0];
+                    let sharmPrices = (row.Prices_Sharm !== undefined && row.Prices_Sharm !== "") ? String(row.Prices_Sharm).split(',').map(p => parseInt(p.trim()) || 0) : [0];
+                    
+                    let pricesObj = { Faisal: {}, Sharm: {} };
+                    sizesArr.forEach((size, idx) => {
+                        pricesObj.Faisal[size] = faisalPrices[idx] !== undefined ? faisalPrices[idx] : (faisalPrices[0] || 0);
+                        pricesObj.Sharm[size] = sharmPrices[idx] !== undefined ? sharmPrices[idx] : (sharmPrices[0] || 0);
+                    });
+
+                    // 3. فحص طريقة الطهي
+                    let needsCook = false;
+                    if (row.Needs_Cooking !== undefined && row.Needs_Cooking !== null) {
+                        let nc = String(row.Needs_Cooking).trim().toLowerCase();
+                        needsCook = (nc === "true" || nc === "1");
+                    }
+
+                    // 4. الإضافة للمنيو بنجاح
+                    menuData.push({
+                        category: (row.Category && String(row.Category).trim() !== "") ? String(row.Category).trim() : "أخرى",
+                        name: (row.Name && String(row.Name).trim() !== "") ? String(row.Name).trim() : "صنف بدون اسم",
+                        desc: (row.Description && String(row.Description).trim() !== "") ? String(row.Description).trim() : "",
+                        sizes: sizesArr,
+                        needsCookingType: needsCook,
+                        prices: pricesObj
+                    });
+                } catch (itemError) {
+                    // لو صنف معين فيه مشكلة كبيرة، هيتجاهله لوحده ويكمل الباقي عادي جداً
+                    console.error(`تم تخطي الصنف في الصف ${index + 2} بسبب خطأ:`, itemError);
+                }
             });
 
-            // تحديث الأقسام الجانبية وتحديد أول قسم متاح تلقائياً
+            // لو المنيو كله طلع فاضي
+            if (menuData.length === 0) {
+                document.getElementById("menu-grid").innerHTML = `<h3 style="grid-column: 1/-1; text-align: center; margin-top:20px;">المنيو فارغ حالياً 🍔</h3>`;
+                return;
+            }
+
+            // تحديد أول قسم كـ Active لو مفيش
             const categories = [...new Set(menuData.map(item => item.category))];
             if (!categories.includes(activeCategory) && categories.length > 0) {
                 activeCategory = categories[0];
