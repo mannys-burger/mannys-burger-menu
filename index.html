@@ -484,7 +484,7 @@
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
     // ==========================================
     
-    // اللينك الجديد بعد التعديل الأخير
+    // اللينك الجديد 
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
     let menuData = [];
@@ -908,9 +908,20 @@
         renderCart();
     }
 
+    // ==========================================
+    // حل مشكلة الرجوع للمنيو بعد تكرار الطلب
+    // ==========================================
     function backToMenu() {
         document.getElementById("cart-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
+        
+        // لو العميل ضغط تكرار الطلب ورجع للمنيو وهو لسه محملش، نحمله فوراً
+        if (menuData.length === 0) {
+            fetchMenuFromSheet();
+        } else {
+            renderSidebar();
+            renderMenuGrid();
+        }
     }
 
     function renderCart() {
@@ -1060,7 +1071,7 @@
 
         const encodedMsg = encodeURIComponent(message);
         
-        // الانتقال المباشر للواتساب بدون setTimeout لمنع الـ Pop-up Blockers
+        // الانتقال المباشر للواتساب
         window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
     }
 </script>
