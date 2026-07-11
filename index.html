@@ -361,7 +361,7 @@
         
         <div id="welcome-back-section">
             <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
-            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
+            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير?</p>
             <button class="btn btn-secondary" onclick="reorderLastTime()">🍔 اطلب نفس الأوردر بضغطة واحدة</button>
             <p style="font-size: 13px; margin-bottom: 0;">أو اختار الفرع تحت لو حابب تعمل أوردر جديد</p>
         </div>
@@ -483,7 +483,7 @@
     // ==========================================
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
     // ==========================================
-   const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
     let menuData = [];
     let currentBranch = "";
@@ -498,7 +498,6 @@
     const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
 
     async function fetchMenuFromSheet() {
-        // رسالة تحميل للعميل
         document.getElementById("menu-grid").innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 20px;">
                 <h3>جاري تحميل المنيو... 🍔</h3>
@@ -513,7 +512,7 @@
 
             rawData.forEach((row, index) => {
                 try {
-                    // 1. فحص الإتاحة بأمان تام (بيقبل true, 1, متاح) وبيستبعد (false, 0, فاضي)
+                    // 1. فحص الإتاحة بأمان (بيقبل true, 1، متاح) وبيستبعد (false, 0، لا، فاضي)
                     let isAvailable = true; 
                     if (row.Available !== undefined && row.Available !== null) {
                         let av = String(row.Available).trim().toLowerCase();
@@ -522,10 +521,7 @@
                         }
                     }
 
-                    // لو الصنف مش متاح، نتخطاه فوراً وميكملش قراءة باقي بياناته عشان ميعلقش السيستم
-                    if (!isAvailable) return;
-
-                    // 2. قراءة الأحجام والأسعار بأمان (عشان لو نسيت تكتب سعر ميضربش إيرور)
+                    // 2. قراءة الأحجام والأسعار بأمان
                     let sizesArr = (row.Sizes !== undefined && row.Sizes !== "") ? String(row.Sizes).split(',').map(s => s.trim()) : ["One Size"];
                     let faisalPrices = (row.Prices_Faisal !== undefined && row.Prices_Faisal !== "") ? String(row.Prices_Faisal).split(',').map(p => parseInt(p.trim()) || 0) : [0];
                     let sharmPrices = (row.Prices_Sharm !== undefined && row.Prices_Sharm !== "") ? String(row.Prices_Sharm).split(',').map(p => parseInt(p.trim()) || 0) : [0];
@@ -543,28 +539,26 @@
                         needsCook = (nc === "true" || nc === "1");
                     }
 
-                    // 4. الإضافة للمنيو بنجاح
+                    // 4. الإضافة للمنيو (شاملة حالة الإتاحة)
                     menuData.push({
                         category: (row.Category && String(row.Category).trim() !== "") ? String(row.Category).trim() : "أخرى",
                         name: (row.Name && String(row.Name).trim() !== "") ? String(row.Name).trim() : "صنف بدون اسم",
                         desc: (row.Description && String(row.Description).trim() !== "") ? String(row.Description).trim() : "",
                         sizes: sizesArr,
                         needsCookingType: needsCook,
-                        prices: pricesObj
+                        prices: pricesObj,
+                        available: isAvailable // حفظ حالة التوفر
                     });
                 } catch (itemError) {
-                    // لو صنف معين فيه مشكلة كبيرة، هيتجاهله لوحده ويكمل الباقي عادي جداً
                     console.error(`تم تخطي الصنف في الصف ${index + 2} بسبب خطأ:`, itemError);
                 }
             });
 
-            // لو المنيو كله طلع فاضي
             if (menuData.length === 0) {
                 document.getElementById("menu-grid").innerHTML = `<h3 style="grid-column: 1/-1; text-align: center; margin-top:20px;">المنيو فارغ حالياً 🍔</h3>`;
                 return;
             }
 
-            // تحديد أول قسم كـ Active لو مفيش
             const categories = [...new Set(menuData.map(item => item.category))];
             if (!categories.includes(activeCategory) && categories.length > 0) {
                 activeCategory = categories[0];
@@ -578,7 +572,6 @@
             document.getElementById("menu-grid").innerHTML = `<p style="grid-column: 1/-1; color: red; text-align: center; font-weight: bold; margin-top: 20px;">حصلت مشكلة في الاتصال بالمنيو. برجاء التأكد من الإنترنت وتحديث الصفحة.</p>`;
         }
     }
-
 
     // ==========================================
     // زرار الدارك مود والذاكرة بتاعته + تلوين نوتش الآيفون
@@ -734,7 +727,16 @@
         grid.innerHTML = "";
         menuData.forEach((item, index) => {
             if (item.category === activeCategory) {
-                grid.innerHTML += `<div class="item-btn" onclick="openModal(${index})">${item.name}</div>`;
+                // فحص الإتاحة وعرض الصنف بناءً عليها
+                if (item.available) {
+                    grid.innerHTML += `<div class="item-btn" onclick="openModal(${index})">${item.name}</div>`;
+                } else {
+                    grid.innerHTML += `
+                        <div class="item-btn" style="opacity: 0.55; border-color: #a0a0a0; background-color: rgba(0,0,0,0.05); cursor: not-allowed; display: flex; flex-direction: column; gap: 4px;" onclick="alert('عذراً، صنف ${item.name} غير متاح حالياً ❌')">
+                            <span>${item.name}</span>
+                            <span style="font-size: 11px; color: #dc3545; font-weight: bold;">غير متاح</span>
+                        </div>`;
+                }
             }
         });
     }
@@ -875,51 +877,6 @@
     function backToMenu() {
         document.getElementById("cart-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
-    }
-
-    function renderCart() {
-        const container = document.getElementById("cart-items-container");
-        container.innerHTML = "";
-        let total = 0;
-
-        cart.forEach((item, i) => {
-            let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
-            let itemTotal = unitPrice * item.quantity;
-            total += itemTotal;
-            
-            let cookStr = item.cookType ? `(${item.cookType})` : "";
-            let sizeStr = item.size ? `[${item.size}]` : "";
-            let comboStr = item.hasCombo ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">➕ وجبة كومبو (بطاطس + بيبسي)</span>` : "";
-            
-            container.innerHTML += `
-                <div class="cart-item">
-                    <strong style="font-size:16px;">${item.name} ${cookStr} ${sizeStr}</strong> ${comboStr} <br>
-                    <div style="margin-top: 10px;">
-                        <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
-                    </div>
-                    
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
-                        <div class="qty-controls" style="margin: 0; padding: 0; background: none;">
-                            <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, 1)">+</button>
-                            <span class="qty-number" style="font-size: 18px;">${item.quantity}</span>
-                            <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, -1)">-</button>
-                        </div>
-                        <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:var(--input-bg); padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
-                    </div>
-                </div>`;
-        });
-        
-        document.getElementById("total-price-display").innerText = total;
-    }
-
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        updateCartCount();
-        if(cart.length === 0) {
-            backToMenu();
-        } else {
-            renderCart();
-        }
     }
 
     // ==========================================
