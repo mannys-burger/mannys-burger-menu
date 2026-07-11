@@ -410,7 +410,6 @@
         </div>
         <div class="form-group"><input type="text" id="cust-landmark" placeholder="علامة مميزة (اختياري)"></div>
         
-        <!-- زرار إرسال الطلب -->
         <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب عبر واتساب</button>
         <button class="btn btn-danger" onclick="backToMenu()">⬅️ رجوع للمنيو</button>
     </div>
@@ -447,10 +446,11 @@
     </div>
 </div>
 
+<!-- تم تعديل نافذة الكومبو عشان تدعم الرسالة المتغيرة (للسماش وغيره) -->
 <div class="modal-overlay" id="upsell-modal">
     <div class="modal-content" style="background-color: var(--upsell-bg); border: 2px solid var(--primary);">
         <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
-        <p style="font-size: 16px; font-weight: bold;">ضيف بطاطس وبيبسي مع الساندوتش بـ <span id="upsell-price-display" style="color: #dc3545; font-size: 20px;">0</span> LE بس!</p>
+        <p id="upsell-text-content" style="font-size: 16px; font-weight: bold; line-height: 1.5;"></p>
         <button class="btn" style="background-color: #28a745; color: white;" onclick="confirmUpsell(true)">🍟 أيوة، خليها كومبو!</button>
         <button class="btn btn-secondary" onclick="confirmUpsell(false)">شكراً، عايز الساندوتش لوحده</button>
     </div>
@@ -482,10 +482,9 @@
     }
 
     // ==========================================
-    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
+    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
     // ==========================================
     
-    // اللينك الجديد المحدث
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
     let menuData = [];
@@ -497,13 +496,9 @@
     let pendingItem = null; 
     let savedAddressesArray = [];
     
-    // رقم الواتساب الثابت
     const WHATSAPP_NUMBER = "201070500094"; 
-    
-    // أسعار وجبة الكومبو للفروع
     const COMBO_PRICES = { Faisal: 60, SharmNaama: 70, SharmNabq: 70 };
 
-    // دالة لتحويل كود الفرع للاسم العربي
     function getBranchNameAr(branchCode) {
         if (branchCode === 'Faisal') return 'فيصل';
         if (branchCode === 'SharmNaama') return 'شرم (خليج نعمة)';
@@ -611,9 +606,6 @@
         }
     }
 
-    // ==========================================
-    // الذاكرة الذكية ودفتر العناوين
-    // ==========================================
     function checkSmartMemory() {
         const savedTheme = localStorage.getItem('mannys_theme');
         if (savedTheme === 'dark') {
@@ -712,7 +704,7 @@
     }
 
     // ==========================================
-    // وظائف المنيو والسلة
+    // وظائف المنيو
     // ==========================================
     function selectBranch(branch) {
         currentBranch = branch;
@@ -824,13 +816,24 @@
             cookType: cookType,
             quantity: currentModalQty,
             hasCombo: false,
-            comboPrice: 0
+            comboPrice: 0,
+            comboDesc: "" // حقل جديد عشان نوصف الكومبو في السلة والواتساب
         };
 
         closeModal();
 
+        // لو الصنف من الأقسام دي، هنعرض عليه الكومبو
         if (item.category === "Beef" || item.category === "Chicken" || item.category === "Sandwich") {
-            document.getElementById("upsell-price-display").innerText = COMBO_PRICES[currentBranch];
+            let isSmash = item.name.includes("سماش") || item.name.toLowerCase().includes("smash");
+            let upsellText = document.getElementById("upsell-text-content");
+            
+            // تخصيص رسالة الكومبو بناءً على نوع الساندوتش
+            if (isSmash) {
+                upsellText.innerHTML = `ضيف بطاطس وبيبسي و<strong>صوص سماش</strong> مع الساندوتش <span style="color: #28a745; font-size: 20px;">ببلاش! (0 LE)</span>`;
+            } else {
+                upsellText.innerHTML = `ضيف بطاطس وبيبسي مع الساندوتش بـ <span style="color: #dc3545; font-size: 20px;">${COMBO_PRICES[currentBranch]}</span> LE بس!`;
+            }
+            
             document.getElementById("upsell-modal").style.display = "flex";
         } else {
             finalizeAddToCart(false);
@@ -847,7 +850,16 @@
 
         if (wantsCombo) {
             pendingItem.hasCombo = true;
-            pendingItem.comboPrice = COMBO_PRICES[currentBranch];
+            
+            // تحديد سعر ووصف الكومبو
+            let isSmash = pendingItem.name.includes("سماش") || pendingItem.name.toLowerCase().includes("smash");
+            if (isSmash) {
+                pendingItem.comboPrice = 0;
+                pendingItem.comboDesc = "➕ كومبو السماش (بطاطس + بيبسي + صوص سماش) - مجاناً";
+            } else {
+                pendingItem.comboPrice = COMBO_PRICES[currentBranch];
+                pendingItem.comboDesc = "➕ وجبة كومبو (بطاطس + بيبسي)";
+            }
         }
 
         let existingItem = cart.find(i => 
@@ -928,7 +940,9 @@
                 let itemName = item.name || "صنف غير معروف";
                 let cookStr = item.cookType ? `(${item.cookType})` : "";
                 let sizeStr = item.size ? `[${item.size}]` : "";
-                let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">➕ وجبة كومبو (بطاطس + بيبسي)</span>` : "";
+                
+                // استخدام الوصف المتغير للكومبو
+                let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}</span>` : "";
                 
                 htmlContent += `
                     <div class="cart-item">
@@ -968,7 +982,7 @@
     }
 
     // ==========================================
-    // إرسال الواتساب المتطور (مع حماية الترتيب وضد التعليق)
+    // إرسال الواتساب (مع حماية الترتيب وضد التعليق)
     // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value.trim();
@@ -1004,16 +1018,10 @@
 
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
-        // التأكيد على ترتيب الأصناف زي ما اتفقنا بالضبط 
+        // التأكيد على ترتيب الأصناف زي ما اتفقنا 
         const categoryPriority = {
-            "Beef": 1, 
-            "Chicken": 2, 
-            "Sandwich": 3, 
-            "Fries": 4,
-            "Sides": 5, 
-            "Sauces": 6, 
-            "Extra": 7, 
-            "Drinks": 8
+            "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4,
+            "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8
         };
 
         const sortedCart = [...cart].sort((a, b) => {
@@ -1039,7 +1047,7 @@
             
             let cookStr = item.cookType ? `(${item.cookType})` : "";
             let sizeStr = item.size ? `[${item.size}]` : "";
-            let comboStr = item.hasCombo ? `\n   ➕ شامل العرض: ${item.quantity}x كومبو (بطاطس + بيبسي)` : "";
+            let comboStr = item.hasCombo ? `\n   ${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}` : "";
             
             message += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE${comboStr}\n`;
         });
@@ -1053,10 +1061,9 @@
 
         const encodedMsg = encodeURIComponent(message);
         
-        // الخطة الجديدة المضمونة 100% لفتح الواتساب (عشان نتخطى حماية المتصفحات)
+        // الخطة المضمونة لفتح الواتساب 
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMsg}`;
         
-        // هيحاول يفتح في نافذة جديدة، لو المتصفح منعه (Blocker) هينقله فوراً في نفس الصفحة 
         let openedWindow = window.open(whatsappUrl, '_blank');
         if (!openedWindow || openedWindow.closed || typeof openedWindow.closed == 'undefined') {
             window.location.href = whatsappUrl;
