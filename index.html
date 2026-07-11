@@ -410,6 +410,7 @@
         </div>
         <div class="form-group"><input type="text" id="cust-landmark" placeholder="علامة مميزة (اختياري)"></div>
         
+        <!-- زرار إرسال الطلب -->
         <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب عبر واتساب</button>
         <button class="btn btn-danger" onclick="backToMenu()">⬅️ رجوع للمنيو</button>
     </div>
@@ -484,7 +485,7 @@
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
     // ==========================================
     
-    // اللينك الجديد 
+    // اللينك الجديد المحدث
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
     let menuData = [];
@@ -495,6 +496,9 @@
     let currentModalQty = 1;
     let pendingItem = null; 
     let savedAddressesArray = [];
+    
+    // رقم الواتساب الثابت
+    const WHATSAPP_NUMBER = "201070500094"; 
     
     // أسعار وجبة الكومبو للفروع
     const COMBO_PRICES = { Faisal: 60, SharmNaama: 70, SharmNabq: 70 };
@@ -518,11 +522,10 @@
             const response = await fetch(SHEET_API_URL);
             const rawData = await response.json();
             
-            menuData = []; // تصفير المنيو القديم
+            menuData = []; 
 
-            // دالة مساعدة لتحليل حالة الإتاحة لكل فرع بذكاء
             function parseAvailability(val) {
-                if (val === undefined || val === null) return true; // لو الخلية فاضية يعتبر متاح
+                if (val === undefined || val === null) return true; 
                 let str = String(val).trim().toLowerCase();
                 if (str === "false" || str === "0" || str === "لا" || str === "") return false;
                 return true;
@@ -530,15 +533,12 @@
 
             rawData.forEach((row, index) => {
                 try {
-                    // 1. فحص الإتاحة لكل فرع بشكل مستقل 
                     let availFaisal = parseAvailability(row.Available_Faisal !== undefined ? row.Available_Faisal : row.Available);
                     let availSharmNaama = parseAvailability(row.Available_SharmNaama !== undefined ? row.Available_SharmNaama : row.Available);
                     let availSharmNabq = parseAvailability(row.Available_SharmNabq !== undefined ? row.Available_SharmNabq : row.Available);
 
-                    // لو الصنف خلصان من الـ 3 فروع، مش هنضيفه للمنيو خالص توفيراً للمساحة
                     if (!availFaisal && !availSharmNaama && !availSharmNabq) return;
 
-                    // 2. قراءة الأحجام والأسعار بأمان
                     let sizesArr = (row.Sizes !== undefined && row.Sizes !== "") ? String(row.Sizes).split(',').map(s => s.trim()) : ["One Size"];
                     let faisalPrices = (row.Prices_Faisal !== undefined && row.Prices_Faisal !== "") ? String(row.Prices_Faisal).split(',').map(p => parseInt(p.trim()) || 0) : [0];
                     let sharmPrices = (row.Prices_Sharm !== undefined && row.Prices_Sharm !== "") ? String(row.Prices_Sharm).split(',').map(p => parseInt(p.trim()) || 0) : [0];
@@ -546,21 +546,17 @@
                     let pricesObj = { Faisal: {}, SharmNaama: {}, SharmNabq: {} };
                     sizesArr.forEach((size, idx) => {
                         pricesObj.Faisal[size] = faisalPrices[idx] !== undefined ? faisalPrices[idx] : (faisalPrices[0] || 0);
-                        
-                        // بنطبق نفس السعر على فرعين شرم
                         let sharmPrice = sharmPrices[idx] !== undefined ? sharmPrices[idx] : (sharmPrices[0] || 0);
                         pricesObj.SharmNaama[size] = sharmPrice;
                         pricesObj.SharmNabq[size] = sharmPrice;
                     });
 
-                    // 3. فحص طريقة الطهي
                     let needsCook = false;
                     if (row.Needs_Cooking !== undefined && row.Needs_Cooking !== null) {
                         let nc = String(row.Needs_Cooking).trim().toLowerCase();
                         needsCook = (nc === "true" || nc === "1");
                     }
 
-                    // 4. الإضافة للمنيو 
                     menuData.push({
                         category: (row.Category && String(row.Category).trim() !== "") ? String(row.Category).trim() : "أخرى",
                         name: (row.Name && String(row.Name).trim() !== "") ? String(row.Name).trim() : "صنف بدون اسم",
@@ -599,7 +595,7 @@
     }
 
     // ==========================================
-    // زرار الدارك مود والذاكرة بتاعته + تلوين نوتش الآيفون
+    // زرار الدارك مود والذاكرة
     // ==========================================
     function toggleTheme() {
         document.body.classList.toggle('dark-mode');
@@ -698,7 +694,6 @@
             if (savedCustStr) {
                 const cust = JSON.parse(savedCustStr);
                 currentBranch = cust.branch || 'Faisal';
-                // للتوافق مع الطلبات القديمة المتسجلة بكلمة شرم فقط
                 if(currentBranch === 'Sharm') currentBranch = 'SharmNaama'; 
             } else {
                 currentBranch = 'Faisal'; 
@@ -712,7 +707,7 @@
             updateCartCount();
             renderCart();
             
-            sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{});
+            try { if(sfx.cash) { sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{}); } } catch(e){}
         }
     }
 
@@ -754,7 +749,6 @@
         grid.innerHTML = "";
         menuData.forEach((item, index) => {
             if (item.category === activeCategory) {
-                // فحص الإتاحة الخاصة بالفرع الحالي
                 if (item.available[currentBranch]) {
                     grid.innerHTML += `<div class="item-btn" onclick="openModal(${index})">${item.name}</div>`;
                 } else {
@@ -895,27 +889,17 @@
             return;
         }
         
-        // تشغيل الصوت بأمان
-        try {
-            if (sfx.cash) {
-                sfx.cash.currentTime = 0; 
-                sfx.cash.play().catch(()=>{});
-            }
-        } catch(e) {}
+        try { if(sfx.cash) { sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{}); } } catch(e){}
 
         document.getElementById("menu-screen").style.display = "none";
         document.getElementById("cart-screen").style.display = "block";
         renderCart();
     }
 
-    // ==========================================
-    // حل مشكلة الرجوع للمنيو بعد تكرار الطلب
-    // ==========================================
     function backToMenu() {
         document.getElementById("cart-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
         
-        // لو العميل ضغط تكرار الطلب ورجع للمنيو وهو لسه محملش، نحمله فوراً
         if (menuData.length === 0) {
             fetchMenuFromSheet();
         } else {
@@ -933,7 +917,6 @@
             let htmlContent = ""; 
 
             cart.forEach((item, i) => {
-                // تأمين الأرقام والأسعار 
                 let price = parseInt(item.price) || 0;
                 let comboPrice = parseInt(item.comboPrice) || 0;
                 let qty = parseInt(item.quantity) || 1;
@@ -942,7 +925,6 @@
                 let itemTotal = unitPrice * qty;
                 total += itemTotal;
                 
-                // تأمين النصوص
                 let itemName = item.name || "صنف غير معروف";
                 let cookStr = item.cookType ? `(${item.cookType})` : "";
                 let sizeStr = item.size ? `[${item.size}]` : "";
@@ -966,7 +948,6 @@
                     </div>`;
             });
             
-            // ضخ الداتا في الشاشة مرة واحدة
             container.innerHTML = htmlContent;
             document.getElementById("total-price-display").innerText = total;
 
@@ -987,7 +968,7 @@
     }
 
     // ==========================================
-    // إرسال الواتساب وحفظ العناوين
+    // إرسال الواتساب المتطور (مع حماية الترتيب وضد التعليق)
     // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value.trim();
@@ -999,13 +980,7 @@
             return;
         }
 
-        // تشغيل الصوت بأمان
-        try {
-            if (sfx.motorcycle) {
-                sfx.motorcycle.currentTime = 0; 
-                sfx.motorcycle.play().catch(()=>{});
-            }
-        } catch(e) {}
+        try { if(sfx.motorcycle) { sfx.motorcycle.currentTime = 0; sfx.motorcycle.play().catch(()=>{}); } } catch(e){}
 
         const building = document.getElementById("cust-building").value.trim();
         const floor = document.getElementById("cust-floor").value.trim();
@@ -1029,9 +1004,16 @@
 
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
+        // التأكيد على ترتيب الأصناف زي ما اتفقنا بالضبط 
         const categoryPriority = {
-            "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4,
-            "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8
+            "Beef": 1, 
+            "Chicken": 2, 
+            "Sandwich": 3, 
+            "Fries": 4,
+            "Sides": 5, 
+            "Sauces": 6, 
+            "Extra": 7, 
+            "Drinks": 8
         };
 
         const sortedCart = [...cart].sort((a, b) => {
@@ -1071,8 +1053,14 @@
 
         const encodedMsg = encodeURIComponent(message);
         
-        // الانتقال المباشر للواتساب
-        window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
+        // الخطة الجديدة المضمونة 100% لفتح الواتساب (عشان نتخطى حماية المتصفحات)
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMsg}`;
+        
+        // هيحاول يفتح في نافذة جديدة، لو المتصفح منعه (Blocker) هينقله فوراً في نفس الصفحة 
+        let openedWindow = window.open(whatsappUrl, '_blank');
+        if (!openedWindow || openedWindow.closed || typeof openedWindow.closed == 'undefined') {
+            window.location.href = whatsappUrl;
+        }
     }
 </script>
 
