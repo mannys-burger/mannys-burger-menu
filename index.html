@@ -483,6 +483,8 @@
     // ==========================================
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
     // ==========================================
+    
+    // اللينك الجديد بعد التعديل الأخير
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
     let menuData = [];
@@ -977,23 +979,28 @@
     // إرسال الواتساب وحفظ العناوين
     // ==========================================
     function sendWhatsApp() {
-        const name = document.getElementById("cust-name").value;
-        const phone = document.getElementById("cust-phone").value;
-        const street = document.getElementById("cust-street").value;
+        const name = document.getElementById("cust-name").value.trim();
+        const phone = document.getElementById("cust-phone").value.trim();
+        const street = document.getElementById("cust-street").value.trim();
         
         if(!name || !phone || !street) {
             alert("⚠️ برجاء ملء البيانات الأساسية (الاسم، الموبايل، الشارع)!");
             return;
         }
 
-        sfx.motorcycle.currentTime = 0; 
-        sfx.motorcycle.play().catch(()=>{});
+        // تشغيل الصوت بأمان
+        try {
+            if (sfx.motorcycle) {
+                sfx.motorcycle.currentTime = 0; 
+                sfx.motorcycle.play().catch(()=>{});
+            }
+        } catch(e) {}
 
-        const building = document.getElementById("cust-building").value;
-        const floor = document.getElementById("cust-floor").value;
-        const apt = document.getElementById("cust-apt").value;
-        const landmark = document.getElementById("cust-landmark").value;
-        const globalNote = document.getElementById("global-note").value;
+        const building = document.getElementById("cust-building").value.trim();
+        const floor = document.getElementById("cust-floor").value.trim();
+        const apt = document.getElementById("cust-apt").value.trim();
+        const landmark = document.getElementById("cust-landmark").value.trim();
+        const globalNote = document.getElementById("global-note").value.trim();
 
         localStorage.setItem('mannys_profile', JSON.stringify({name, phone}));
 
@@ -1053,9 +1060,8 @@
 
         const encodedMsg = encodeURIComponent(message);
         
-        setTimeout(() => {
-            window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`, '_blank');
-        }, 500);
+        // الانتقال المباشر للواتساب بدون setTimeout لمنع الـ Pop-up Blockers
+        window.location.href = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodedMsg}`;
     }
 </script>
 
