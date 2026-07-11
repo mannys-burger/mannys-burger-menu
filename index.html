@@ -39,7 +39,7 @@
             --muted-text: #aaa;
         }
 
-        /* التعديل هنا: حل مشكلة سفاري والآيفون */
+        /* حل مشكلة سفاري والآيفون */
         html {
             background-color: var(--bg);
             transition: background-color 0.3s;
@@ -56,7 +56,7 @@
             color: var(--dark);
             transition: background-color 0.3s, color 0.3s;
             min-height: 100vh;
-            min-height: -webkit-fill-available; /* حل الآيفون السحري */
+            min-height: -webkit-fill-available;
         }
 
         /* خلفية اللوجو المائية (الوضع الفاتح) */
@@ -481,69 +481,11 @@
     }
 
     // ==========================================
-    // قاعدة البيانات المُحدثة (تم إضافة وصف الساندوتشات بالكامل)
+    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
     // ==========================================
-    const menuData = [
-        { category: "Beef", name: "Classic Burger", desc: "برجر، شريحة جبن أمريكي، صوص ماني، صوص باربيكيو، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 120, "250g": 170, "300g": 190, "400g": 240 }, Sharm: { "150g": 140, "250g": 200, "300g": 220, "400g": 270 } } },
-        { category: "Beef", name: "Caramelized Burger", desc: "برجر، شريحة جبن أمريكي، بصل مكرمل، صوص ماني، صوص باربيكيو، خس، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 140, "250g": 190, "300g": 210, "400g": 260 }, Sharm: { "150g": 160, "250g": 220, "300g": 240, "400g": 290 } } },
-        { category: "Beef", name: "White Burger", desc: "برجر، شريحة جبن أمريكي، بيف بيكون بقري، صوص رانش، صوص ماني، خس، طماطم، بصل، خيار", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 155, "250g": 205, "300g": 225, "400g": 275 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
-        { category: "Beef", name: "New York Burger", desc: "برجر، شريحة جبن أمريكي، لحم مفروم مطهي، صوص ماني، صوص نيويورك، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
-        { category: "Beef", name: "Fire Bite Burger", desc: "برجر، شريحة جبن أمريكي، لحم مفروم، صوص فاير، صوص ماني، فلفل هالبينو، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 165, "250g": 215, "300g": 235, "400g": 285 }, Sharm: { "150g": 185, "250g": 245, "300g": 265, "400g": 315 } } },
-        { category: "Beef", name: "Boskino Burger", desc: "برجر، شريحة جبن أمريكي، لحم بقرى مدخن، أصابع شيدر هالبينو، صوص الشيدر، صوص باربيكيو، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 170, "250g": 220, "300g": 240, "400g": 290 }, Sharm: { "150g": 190, "250g": 250, "300g": 270, "400g": 320 } } },
-        { category: "Beef", name: "Texas Burger", desc: "برجر، شريحة جبن أمريكي، هوت دوج مشوي، صوص تكساس، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
-        { category: "Beef", name: "Mushroom Burger", desc: "برجر، شريحة جبن أمريكي، مشروم، صوص مشروم، صوص ماني", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 150, "250g": 200, "300g": 220, "400g": 270 }, Sharm: { "150g": 170, "250g": 230, "300g": 250, "400g": 300 } } },
-        { category: "Beef", name: "Smoked Burger", desc: "برجر، شريحة جبن أمريكي، تركي مدخن، حلقات بصل مقلية، صوص باربيكيو، صوص ماني، خس، بصل، طماطم، خيار مخلل", sizes: ["150g", "250g", "300g", "400g"], prices: { Faisal: { "150g": 160, "250g": 210, "300g": 230, "400g": 280 }, Sharm: { "150g": 180, "250g": 240, "300g": 260, "400g": 310 } } },
-        { category: "Beef", name: "Smash Burger", sizes: ["Double", "Triple"], prices: { Faisal: { "Double": 200, "Triple": 250 }, Sharm: { "Double": 240, "Triple": 290 } } },
-        { category: "Chicken", name: "Classic Chicken", desc: "فراخ، صوص ماني، صوص الجبنة الشيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 110, "Double": 160, "Triple": 210 }, Sharm: { "Single": 120, "Double": 170, "Triple": 220 } } },
-        { category: "Chicken", name: "Supreme Chicken", desc: "فراخ، تركي مدخن، صوص باربيكيو، صوص ماني، صوص الجبنة الشيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 125, "Double": 175, "Triple": 225 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Ranch Chicken", desc: "فراخ، بيف بيكون بقرى، صوص رانش، صوص جبنة شيدر، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
-        { category: "Chicken", name: "RBJ Chicken", desc: "فراخ، لحم بقرى مدخن، صوص بافللو، صوص رانش، صوص جبنة، صوص مانى، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 140, "Double": 190, "Triple": 240 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Chili Chicken", desc: "فراخ، لحم بقرى مدخن، صوص تشيلي، صوص جبنة، صوص ماني، فلفل هالبينو، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "NASA Chicken", desc: "فراخ، لحم تركي مدخن، صوص تكساس، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Magnum Chicken", desc: "فراخ، لحم تركي مدخن، أصابع موتزاريلا، صوص باربيكيو، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 150, "Double": 200, "Triple": 250 }, Sharm: { "Single": 160, "Double": 210, "Triple": 260 } } },
-        { category: "Chicken", name: "Chicken Yellow", desc: "فراخ، لحم تركي مدخن، صوص هاني مسطردة، صوص جبنة، صوص ماني، خس", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 130, "Double": 180, "Triple": 230 }, Sharm: { "Single": 140, "Double": 190, "Triple": 240 } } },
-        { category: "Chicken", name: "Mano Chicken", sizes: ["Single", "Double", "Triple"], prices: { Faisal: { "Single": 100, "Double": 150, "Triple": 200 }, Sharm: { "Single": 120, "Double": 180, "Triple": 240 } } },
-        { category: "Sandwich", name: "Smoked Hotdog", desc: "هوت دوج، بيف بيكون بقرى، صوص تكساس، خس", sizes: ["One Size"], prices: { Faisal: { "One Size": 110 }, Sharm: { "One Size": 120 } } },
-        { category: "Sandwich", name: "Classic Hotdog", desc: "هوت دوج، مسطردة، خس", sizes: ["One Size"], prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
-        { category: "Sandwich", name: "Chicken Wrap", sizes: ["One Size"], needsCookingType: true, prices: { Faisal: { "One Size": 90 }, Sharm: { "One Size": 100 } } },
-        { category: "Sandwich", name: "Loaded Fries Wrap", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 90 } } },
-        { category: "Fries", name: "Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
-        { category: "Fries", name: "Crispy Fries", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 70 } } },
-        { category: "Fries", name: "Chili Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
-        { category: "Fries", name: "Beef Bacon Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
-        { category: "Fries", name: "Smoky Doggy", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 70, "Large": 120 }, Sharm: { "Small": 100, "Large": 180 } } },
-        { category: "Fries", name: "Cheese Fries", sizes: ["Small", "Large"], prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
-        { category: "Fries", name: "Chicky Fries", sizes: ["Small", "Large"], needsCookingType: true, prices: { Faisal: { "Small": 90, "Large": 160 }, Sharm: { "Small": 100, "Large": 180 } } },
-        { category: "Sides", name: "Mozzarella sticks", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
-        { category: "Sides", name: "Cheddar jalapeno", sizes: ["One Size"], prices: { Faisal: { "One Size": 60 }, Sharm: { "One Size": 75 } } },
-        { category: "Sides", name: "Onion rings", sizes: ["One Size"], prices: { Faisal: { "One Size": 50 }, Sharm: { "One Size": 60 } } },
-        { category: "Sides", name: "Coleslaw", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 50 } } },
-        { category: "Sauces", name: "Cheddar cheese sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 25 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Fire sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Ranch sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "BBQ sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Thai chili sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "New York sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Texas sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Buffalo sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Honey mustard sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Sauces", name: "Dynamite sauce", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Extra", name: "Extra bun", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 25 } } },
-        { category: "Extra", name: "Extra patty 150gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 80 }, Sharm: { "One Size": 100 } } },
-        { category: "Extra", name: "Extra patty 250gm", sizes: ["One Size"], prices: { Faisal: { "One Size": 120 }, Sharm: { "One Size": 145 } } },
-        { category: "Extra", name: "Extra Chicken piece", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 40 } } },
-        { category: "Extra", name: "Smoked turkey", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 25 } } },
-        { category: "Extra", name: "Smoked beef", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 30 } } },
-        { category: "Extra", name: "Beef Bacon", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 50 } } },
-        { category: "Extra", name: "Carmalised", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 40 } } },
-        { category: "Extra", name: "Mushroom", sizes: ["One Size"], prices: { Faisal: { "One Size": 40 }, Sharm: { "One Size": 50 } } },
-        { category: "Extra", name: "Add sauce on sandwich", sizes: ["One Size"], prices: { Faisal: { "One Size": 10 }, Sharm: { "One Size": 15 } } },
-        { category: "Extra", name: "Cheese extra", sizes: ["One Size"], prices: { Faisal: { "One Size": 20 }, Sharm: { "One Size": 35 } } },
-        { category: "Extra", name: "Cheese slice", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
-        { category: "Extra", name: "Spicy (jalapeno + fire)", sizes: ["One Size"], prices: { Faisal: { "One Size": 15 }, Sharm: { "One Size": 20 } } },
-        { category: "Drinks", name: "Soft Drink", sizes: ["One Size"], prices: { Faisal: { "One Size": 30 }, Sharm: { "One Size": 40 } } }
-    ];
-
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbz3bfyoKbsohUKH23aJQZUucgYLSh40qc-rNlNJmlTDhmGgbUUdKjGEzp1vyA6HXpp5/exec";
+    
+    let menuData = [];
     let currentBranch = "";
     let cart = [];
     let activeCategory = "Beef";
@@ -554,6 +496,57 @@
     
     const WHATSAPP_NUMBER = "201070500094"; 
     const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
+
+    async function fetchMenuFromSheet() {
+        // رسالة تحميل للعميل
+        document.getElementById("menu-grid").innerHTML = `
+            <div style="grid-column: 1/-1; text-align: center; padding: 20px;">
+                <h3>جاري تحميل المنيو... 🍔</h3>
+                <p style="font-size:14px; color:var(--muted-text);">لحظات وبنجهزلك أجدد الأسعار</p>
+            </div>`;
+        
+        try {
+            const response = await fetch(SHEET_API_URL);
+            const rawData = await response.json();
+            
+            // فلترة الأصناف المتاحة بس وتجهيزها
+            menuData = rawData.filter(row => row.Available === true || row.Available === "TRUE" || row.Available === "true").map(row => {
+                
+                let sizesArr = row.Sizes ? row.Sizes.toString().split(',').map(s => s.trim()) : ["One Size"];
+                let faisalPrices = row.Prices_Faisal ? row.Prices_Faisal.toString().split(',').map(p => parseInt(p.trim())) : [0];
+                let sharmPrices = row.Prices_Sharm ? row.Prices_Sharm.toString().split(',').map(p => parseInt(p.trim())) : [0];
+                
+                let pricesObj = { Faisal: {}, Sharm: {} };
+                sizesArr.forEach((size, idx) => {
+                    pricesObj.Faisal[size] = faisalPrices[idx] || faisalPrices[0] || 0;
+                    pricesObj.Sharm[size] = sharmPrices[idx] || sharmPrices[0] || 0;
+                });
+
+                return {
+                    category: row.Category || "Other",
+                    name: row.Name || "",
+                    desc: row.Description || "",
+                    sizes: sizesArr,
+                    needsCookingType: (row.Needs_Cooking === true || row.Needs_Cooking === "TRUE" || row.Needs_Cooking === "true"),
+                    prices: pricesObj
+                };
+            });
+
+            // تحديث الأقسام الجانبية وتحديد أول قسم متاح تلقائياً
+            const categories = [...new Set(menuData.map(item => item.category))];
+            if (!categories.includes(activeCategory) && categories.length > 0) {
+                activeCategory = categories[0];
+            }
+
+            renderSidebar();
+            renderMenuGrid();
+
+        } catch (error) {
+            console.error("مشكلة في تحميل المنيو:", error);
+            document.getElementById("menu-grid").innerHTML = `<p style="grid-column: 1/-1; color: red; text-align: center; font-weight: bold; margin-top: 20px;">حصلت مشكلة في الاتصال بالمنيو. برجاء التأكد من الإنترنت وتحديث الصفحة.</p>`;
+        }
+    }
+
 
     // ==========================================
     // زرار الدارك مود والذاكرة بتاعته + تلوين نوتش الآيفون
@@ -566,7 +559,6 @@
         localStorage.setItem('mannys_theme', isDark ? 'dark' : 'light');
         document.getElementById('theme-toggle').innerText = isDark ? '☀️' : '🌙';
 
-        // تلوين شريط إشعارات الآيفون (Notch)
         const metaThemeColor = document.getElementById('meta-theme-color');
         if (metaThemeColor) {
             metaThemeColor.setAttribute('content', isDark ? '#121212' : '#f2f4f7');
@@ -661,8 +653,6 @@
             }
             
             document.getElementById("branch-name-display").innerText = currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
-            renderSidebar();
-            renderMenuGrid();
             
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
@@ -683,8 +673,12 @@
         document.getElementById("menu-screen").style.display = "block";
         document.getElementById("branch-name-display").innerText = branch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
         
-        renderSidebar();
-        renderMenuGrid();
+        if(menuData.length === 0) {
+            fetchMenuFromSheet();
+        } else {
+            renderSidebar();
+            renderMenuGrid();
+        }
     }
 
     function renderSidebar() {
@@ -721,9 +715,8 @@
         const item = menuData[index];
         document.getElementById("modal-item-name").innerText = item.name;
         
-        // جلب الشرح وعرضه لو متاح
         const descElement = document.getElementById("modal-item-desc");
-        if (item.desc) {
+        if (item.desc && item.desc.trim() !== "") {
             descElement.innerText = item.desc;
             descElement.style.display = "block";
         } else {
