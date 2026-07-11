@@ -483,7 +483,7 @@
     // ==========================================
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
     // ==========================================
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
+    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbxcptWMlh1o9O8YAD2aTpft3QEdrHRRyI15lTEklKQ4jhQ4Cqs2dFxHDiO0VNMzX3svWA/exec";
     
     let menuData = [];
     let currentBranch = "";
@@ -529,7 +529,6 @@
             rawData.forEach((row, index) => {
                 try {
                     // 1. فحص الإتاحة لكل فرع بشكل مستقل 
-                    // لو ملحوظة: لو لسه معملتش الأعمدة الجديدة، الكود هيرجع لعمود Available القديم عشان ميضربش
                     let availFaisal = parseAvailability(row.Available_Faisal !== undefined ? row.Available_Faisal : row.Available);
                     let availSharmNaama = parseAvailability(row.Available_SharmNaama !== undefined ? row.Available_SharmNaama : row.Available);
                     let availSharmNabq = parseAvailability(row.Available_SharmNabq !== undefined ? row.Available_SharmNabq : row.Available);
@@ -893,7 +892,14 @@
             alert("السلة فاضية! اختار ساندوتشاتك الأول.");
             return;
         }
-        sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{});
+        
+        // تشغيل الصوت بأمان
+        try {
+            if (sfx.cash) {
+                sfx.cash.currentTime = 0; 
+                sfx.cash.play().catch(()=>{});
+            }
+        } catch(e) {}
 
         document.getElementById("menu-screen").style.display = "none";
         document.getElementById("cart-screen").style.display = "block";
@@ -903,6 +909,68 @@
     function backToMenu() {
         document.getElementById("cart-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
+    }
+
+    function renderCart() {
+        const container = document.getElementById("cart-items-container");
+        if (!container) return;
+        
+        try {
+            let total = 0;
+            let htmlContent = ""; 
+
+            cart.forEach((item, i) => {
+                // تأمين الأرقام والأسعار 
+                let price = parseInt(item.price) || 0;
+                let comboPrice = parseInt(item.comboPrice) || 0;
+                let qty = parseInt(item.quantity) || 1;
+                
+                let unitPrice = price + (item.hasCombo === true ? comboPrice : 0);
+                let itemTotal = unitPrice * qty;
+                total += itemTotal;
+                
+                // تأمين النصوص
+                let itemName = item.name || "صنف غير معروف";
+                let cookStr = item.cookType ? `(${item.cookType})` : "";
+                let sizeStr = item.size ? `[${item.size}]` : "";
+                let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">➕ وجبة كومبو (بطاطس + بيبسي)</span>` : "";
+                
+                htmlContent += `
+                    <div class="cart-item">
+                        <strong style="font-size:16px;">${itemName} ${cookStr} ${sizeStr}</strong> ${comboStr} <br>
+                        <div style="margin-top: 10px;">
+                            <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
+                        </div>
+                        
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
+                            <div class="qty-controls" style="margin: 0; padding: 0; background: none;">
+                                <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, 1)">+</button>
+                                <span class="qty-number" style="font-size: 18px;">${qty}</span>
+                                <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, -1)">-</button>
+                            </div>
+                            <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:var(--input-bg); padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
+                        </div>
+                    </div>`;
+            });
+            
+            // ضخ الداتا في الشاشة مرة واحدة
+            container.innerHTML = htmlContent;
+            document.getElementById("total-price-display").innerText = total;
+
+        } catch (error) {
+            console.error("خطأ أثناء رسم السلة:", error);
+            container.innerHTML = `<p style="text-align:center; color:red; font-weight:bold;">حدث خطأ بسيط في عرض السلة. برجاء تحديث الصفحة والمحاولة مرة أخرى.</p>`;
+        }
+    }
+
+    function removeFromCart(index) {
+        cart.splice(index, 1);
+        updateCartCount();
+        if(cart.length === 0) {
+            backToMenu();
+        } else {
+            renderCart();
+        }
     }
 
     // ==========================================
