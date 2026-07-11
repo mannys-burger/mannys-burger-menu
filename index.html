@@ -59,7 +59,7 @@
             min-height: -webkit-fill-available;
         }
 
-        /* خلفية اللوجو المائية (الوضع الفاتح) */
+        /* خلفية اللوجو المائية */
         body::before {
             content: "";
             position: fixed;
@@ -75,7 +75,6 @@
             z-index: -1; 
         }
 
-        /* خلفية اللوجو المائية (الوضع الليلي) */
         body.dark-mode::before {
             background-image: url('logo-dark.png'); 
             opacity: 0.05; 
@@ -319,7 +318,7 @@
         
         #saved-addresses-list::-webkit-scrollbar { display: none; }
         
-        /* زرار السلة الثابت تحت */
+        /* زرار السلة الثابت */
         #view-cart-btn {
             position: fixed; 
             bottom: 0; 
@@ -361,14 +360,15 @@
         
         <div id="welcome-back-section">
             <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
-            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير?</p>
+            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
             <button class="btn btn-secondary" onclick="reorderLastTime()">🍔 اطلب نفس الأوردر بضغطة واحدة</button>
             <p style="font-size: 13px; margin-bottom: 0;">أو اختار الفرع تحت لو حابب تعمل أوردر جديد</p>
         </div>
 
         <h2>بتطلب منين؟</h2>
         <button class="btn" onclick="selectBranch('Faisal')">فرع فيصل</button>
-        <button class="btn" onclick="selectBranch('Sharm')">فرع شرم الشيخ</button>
+        <button class="btn" onclick="selectBranch('SharmNaama')">فرع شرم (خليج نعمة)</button>
+        <button class="btn" onclick="selectBranch('SharmNabq')">فرع شرم (خليج نبق)</button>
     </div>
 
     <div id="menu-screen">
@@ -481,7 +481,7 @@
     }
 
     // ==========================================
-    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
+    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات (شامل الفروع الثلاثة)
     // ==========================================
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
     
@@ -494,8 +494,16 @@
     let pendingItem = null; 
     let savedAddressesArray = [];
     
-    const WHATSAPP_NUMBER = "201070500094"; 
-    const COMBO_PRICES = { Faisal: 60, Sharm: 70 };
+    // أسعار وجبة الكومبو للفروع
+    const COMBO_PRICES = { Faisal: 60, SharmNaama: 70, SharmNabq: 70 };
+
+    // دالة لتحويل كود الفرع للاسم العربي
+    function getBranchNameAr(branchCode) {
+        if (branchCode === 'Faisal') return 'فيصل';
+        if (branchCode === 'SharmNaama') return 'شرم (خليج نعمة)';
+        if (branchCode === 'SharmNabq') return 'شرم (خليج نبق)';
+        return branchCode;
+    }
 
     async function fetchMenuFromSheet() {
         document.getElementById("menu-grid").innerHTML = `
@@ -510,26 +518,38 @@
             
             menuData = []; // تصفير المنيو القديم
 
+            // دالة مساعدة لتحليل حالة الإتاحة لكل فرع بذكاء
+            function parseAvailability(val) {
+                if (val === undefined || val === null) return true; // لو الخلية فاضية يعتبر متاح
+                let str = String(val).trim().toLowerCase();
+                if (str === "false" || str === "0" || str === "لا" || str === "") return false;
+                return true;
+            }
+
             rawData.forEach((row, index) => {
                 try {
-                    // 1. فحص الإتاحة بأمان (بيقبل true, 1، متاح) وبيستبعد (false, 0، لا، فاضي)
-                    let isAvailable = true; 
-                    if (row.Available !== undefined && row.Available !== null) {
-                        let av = String(row.Available).trim().toLowerCase();
-                        if (av === "false" || av === "0" || av === "لا" || av === "") {
-                            isAvailable = false;
-                        }
-                    }
+                    // 1. فحص الإتاحة لكل فرع بشكل مستقل 
+                    // لو ملحوظة: لو لسه معملتش الأعمدة الجديدة، الكود هيرجع لعمود Available القديم عشان ميضربش
+                    let availFaisal = parseAvailability(row.Available_Faisal !== undefined ? row.Available_Faisal : row.Available);
+                    let availSharmNaama = parseAvailability(row.Available_SharmNaama !== undefined ? row.Available_SharmNaama : row.Available);
+                    let availSharmNabq = parseAvailability(row.Available_SharmNabq !== undefined ? row.Available_SharmNabq : row.Available);
+
+                    // لو الصنف خلصان من الـ 3 فروع، مش هنضيفه للمنيو خالص توفيراً للمساحة
+                    if (!availFaisal && !availSharmNaama && !availSharmNabq) return;
 
                     // 2. قراءة الأحجام والأسعار بأمان
                     let sizesArr = (row.Sizes !== undefined && row.Sizes !== "") ? String(row.Sizes).split(',').map(s => s.trim()) : ["One Size"];
                     let faisalPrices = (row.Prices_Faisal !== undefined && row.Prices_Faisal !== "") ? String(row.Prices_Faisal).split(',').map(p => parseInt(p.trim()) || 0) : [0];
                     let sharmPrices = (row.Prices_Sharm !== undefined && row.Prices_Sharm !== "") ? String(row.Prices_Sharm).split(',').map(p => parseInt(p.trim()) || 0) : [0];
                     
-                    let pricesObj = { Faisal: {}, Sharm: {} };
+                    let pricesObj = { Faisal: {}, SharmNaama: {}, SharmNabq: {} };
                     sizesArr.forEach((size, idx) => {
                         pricesObj.Faisal[size] = faisalPrices[idx] !== undefined ? faisalPrices[idx] : (faisalPrices[0] || 0);
-                        pricesObj.Sharm[size] = sharmPrices[idx] !== undefined ? sharmPrices[idx] : (sharmPrices[0] || 0);
+                        
+                        // بنطبق نفس السعر على فرعين شرم
+                        let sharmPrice = sharmPrices[idx] !== undefined ? sharmPrices[idx] : (sharmPrices[0] || 0);
+                        pricesObj.SharmNaama[size] = sharmPrice;
+                        pricesObj.SharmNabq[size] = sharmPrice;
                     });
 
                     // 3. فحص طريقة الطهي
@@ -539,7 +559,7 @@
                         needsCook = (nc === "true" || nc === "1");
                     }
 
-                    // 4. الإضافة للمنيو (شاملة حالة الإتاحة)
+                    // 4. الإضافة للمنيو 
                     menuData.push({
                         category: (row.Category && String(row.Category).trim() !== "") ? String(row.Category).trim() : "أخرى",
                         name: (row.Name && String(row.Name).trim() !== "") ? String(row.Name).trim() : "صنف بدون اسم",
@@ -547,7 +567,11 @@
                         sizes: sizesArr,
                         needsCookingType: needsCook,
                         prices: pricesObj,
-                        available: isAvailable // حفظ حالة التوفر
+                        available: {
+                            Faisal: availFaisal,
+                            SharmNaama: availSharmNaama,
+                            SharmNabq: availSharmNabq
+                        }
                     });
                 } catch (itemError) {
                     console.error(`تم تخطي الصنف في الصف ${index + 2} بسبب خطأ:`, itemError);
@@ -673,11 +697,13 @@
             if (savedCustStr) {
                 const cust = JSON.parse(savedCustStr);
                 currentBranch = cust.branch || 'Faisal';
+                // للتوافق مع الطلبات القديمة المتسجلة بكلمة شرم فقط
+                if(currentBranch === 'Sharm') currentBranch = 'SharmNaama'; 
             } else {
                 currentBranch = 'Faisal'; 
             }
             
-            document.getElementById("branch-name-display").innerText = currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
+            document.getElementById("branch-name-display").innerText = getBranchNameAr(currentBranch);
             
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
@@ -696,7 +722,7 @@
         currentBranch = branch;
         document.getElementById("branch-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
-        document.getElementById("branch-name-display").innerText = branch === 'Faisal' ? 'فيصل' : 'شرم الشيخ';
+        document.getElementById("branch-name-display").innerText = getBranchNameAr(branch);
         
         if(menuData.length === 0) {
             fetchMenuFromSheet();
@@ -727,8 +753,8 @@
         grid.innerHTML = "";
         menuData.forEach((item, index) => {
             if (item.category === activeCategory) {
-                // فحص الإتاحة وعرض الصنف بناءً عليها
-                if (item.available) {
+                // فحص الإتاحة الخاصة بالفرع الحالي
+                if (item.available[currentBranch]) {
                     grid.innerHTML += `<div class="item-btn" onclick="openModal(${index})">${item.name}</div>`;
                 } else {
                     grid.innerHTML += `
@@ -929,7 +955,7 @@
         });
 
         let total = 0;
-        let message = `*طلب جديد من فرع: ${currentBranch === 'Faisal' ? 'فيصل' : 'شرم الشيخ'}* 🍔\n`;
+        let message = `*طلب جديد من فرع: ${getBranchNameAr(currentBranch)}* 🍔\n`;
         message += `-------------------\n`;
         message += `*الاسم:* ${name}\n`;
         message += `*التليفون:* ${phone}\n`;
