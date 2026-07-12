@@ -84,29 +84,38 @@
             max-width: 800px;
             margin: 0 auto;
             padding: 15px;
+            padding-top: 60px; /* لترك مساحة للبار العلوي */
         }
         h1, h2, h3 { text-align: center; }
         
-        /* Theme Toggle Button */
-        #theme-toggle {
+        /* Top Bar */
+        .top-bar {
             position: fixed;
-            top: 15px;
-            left: 15px;
-            background: var(--card-bg);
-            border: 2px solid var(--primary);
-            border-radius: 50%;
-            width: 45px;
-            height: 45px;
-            font-size: 20px;
-            cursor: pointer;
+            top: 10px;
+            left: 10px;
+            right: 10px;
             z-index: 1000;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            justify-content: center;
+        }
+        .top-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--primary);
+            color: var(--dark);
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-weight: bold;
+            cursor: pointer;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
             transition: 0.3s;
         }
-        #theme-toggle:active { transform: scale(0.9); }
+        .top-btn.filled {
+            background: var(--primary);
+            color: #222;
+            border-color: var(--primary);
+        }
+        .top-btn:active { transform: scale(0.95); }
 
         /* Buttons */
         .btn {
@@ -126,6 +135,7 @@
         .btn:active { transform: scale(0.98); }
         .btn-secondary { background-color: var(--dark); color: var(--light); }
         .btn-danger { background-color: #dc3545; color: white; }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
         @keyframes pulse {
             0% { transform: scale(1); }
@@ -176,7 +186,7 @@
             padding: 5px;
             height: fit-content;
             position: sticky;
-            top: 10px;
+            top: 70px;
             box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
         .cat-tab {
@@ -231,7 +241,7 @@
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 2000; /* أعلى من البار العلوي */
         }
         .modal-content {
             background: var(--card-bg);
@@ -245,10 +255,10 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-        .modal-content select {
+        .modal-content select, .modal-content input {
             width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px;
             border: 1px solid var(--border); font-size: 16px; font-family: inherit;
-            background: var(--input-bg); color: var(--dark);
+            background: var(--input-bg); color: var(--dark); box-sizing: border-box;
         }
 
         /* Quantity Controls */
@@ -340,7 +350,13 @@
 </head>
 <body>
 
-<button id="theme-toggle" onclick="toggleTheme()">🌙</button>
+<div class="top-bar">
+    <div style="display:flex; gap:10px;">
+        <button id="theme-toggle" class="top-btn" onclick="toggleTheme()">🌙</button>
+        <button id="lang-toggle" class="top-btn" onclick="toggleLanguage()">English</button>
+    </div>
+    <button class="top-btn filled" onclick="openTrackingModal()" data-ar="📍 تتبع أوردري" data-en="📍 Track Order">📍 تتبع أوردري</button>
+</div>
 
 <div class="container">
     <div id="branch-screen">
@@ -349,57 +365,57 @@
         <div id="pwa-install-section">
             <p id="pwa-text" style="margin: 0 0 10px 0; font-weight: bold; color: var(--success-text); font-size: 15px;"></p>
             <button id="android-install-btn" class="btn" style="display: none; background-color: #28a745; color: white; margin: 0; border: 1px solid #1e7e34; animation: pulse 2s infinite;">
-                📲 نزل الأبلكيشن دلوقتي
+                <span data-ar="📲 نزل الأبلكيشن دلوقتي" data-en="📲 Install the App Now">📲 نزل الأبلكيشن دلوقتي</span>
             </button>
             <div id="ios-instructions" style="display: none; color: var(--success-text); font-size: 14px; line-height: 1.6;">
-                لتثبيت التطبيق على الآيفون: <br>
-                اضغط على زر المشاركة <span style="font-size: 18px; font-weight: bold;">⍗</span> أسفل الشاشة <br>
-                ثم اختر <strong>Add to Home Screen ➕</strong>
+                <span data-ar="لتثبيت التطبيق على الآيفون: <br> اضغط على زر المشاركة <span style='font-size: 18px; font-weight: bold;'>⍗</span> أسفل الشاشة <br> ثم اختر <strong>Add to Home Screen ➕</strong>" data-en="To install on iPhone: <br> Tap the Share button <span style='font-size: 18px; font-weight: bold;'>⍗</span> <br> then choose <strong>Add to Home Screen ➕</strong>">
+                    لتثبيت التطبيق على الآيفون: <br> اضغط على زر المشاركة <span style='font-size: 18px; font-weight: bold;'>⍗</span> أسفل الشاشة <br> ثم اختر <strong>Add to Home Screen ➕</strong>
+                </span>
             </div>
         </div>
         
         <div id="welcome-back-section">
-            <h3 style="margin-top:0;">أهلاً بيك تاني يا <span id="saved-name"></span>! 👋</h3>
-            <p style="font-size: 15px; font-weight: bold;">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
-            <button class="btn btn-secondary" onclick="reorderLastTime()">🍔 اطلب نفس الأوردر بضغطة واحدة</button>
-            <p style="font-size: 13px; margin-bottom: 0;">أو اختار الفرع تحت لو حابب تعمل أوردر جديد</p>
+            <h3 style="margin-top:0;"><span data-ar="أهلاً بيك تاني يا" data-en="Welcome back,">أهلاً بيك تاني يا</span> <span id="saved-name"></span>! 👋</h3>
+            <p style="font-size: 15px; font-weight: bold;" data-ar="تحب تنجز وتطلب نفس أوردرك الأخير؟" data-en="Want to order your last meal again?">تحب تنجز وتطلب نفس أوردرك الأخير؟</p>
+            <button class="btn btn-secondary" onclick="reorderLastTime()" data-ar="🍔 اطلب نفس الأوردر بضغطة واحدة" data-en="🍔 Reorder your last meal">🍔 اطلب نفس الأوردر بضغطة واحدة</button>
+            <p style="font-size: 13px; margin-bottom: 0;" data-ar="أو اختار الفرع تحت لو حابب تعمل أوردر جديد" data-en="Or choose a branch below for a new order">أو اختار الفرع تحت لو حابب تعمل أوردر جديد</p>
         </div>
 
-        <h2>بتطلب منين؟</h2>
-        <button class="btn" onclick="selectBranch('Faisal')">فرع فيصل</button>
-        <button class="btn" onclick="selectBranch('SharmNaama')">فرع شرم (خليج نعمة)</button>
-        <button class="btn" onclick="selectBranch('SharmNabq')">فرع شرم (خليج نبق)</button>
+        <h2 data-ar="بتطلب منين؟" data-en="Where are you ordering from?">بتطلب منين؟</h2>
+        <button class="btn" onclick="selectBranch('Faisal')" data-ar="فرع فيصل" data-en="Faisal Branch">فرع فيصل</button>
+        <button class="btn" onclick="selectBranch('SharmNaama')" data-ar="فرع شرم (خليج نعمة)" data-en="Sharm (Naama Bay)">فرع شرم (خليج نعمة)</button>
+        <button class="btn" onclick="selectBranch('SharmNabq')" data-ar="فرع شرم (خليج نبق)" data-en="Sharm (Nabq Bay)">فرع شرم (خليج نبق)</button>
     </div>
 
     <div id="menu-screen">
-        <h3 style="margin-top: 0;">فرع <span id="branch-name-display"></span></h3>
+        <h3 style="margin-top: 0;"><span data-ar="فرع" data-en="Branch:">فرع</span> <span id="branch-name-display"></span></h3>
         
         <div class="menu-layout">
             <div class="sidebar" id="sidebar-categories"></div>
             <div class="menu-content" id="menu-grid"></div>
         </div>
 
-        <button id="view-cart-btn" class="btn btn-secondary" onclick="showCart()">🛒 السلة (<span id="cart-count">0</span>) - إتمام الطلب</button>
+        <button id="view-cart-btn" class="btn btn-secondary" onclick="showCart()"><span data-ar="🛒 السلة (" data-en="🛒 Cart (">🛒 السلة (</span><span id="cart-count">0</span><span data-ar=") - إتمام الطلب" data-en=") - Checkout">) - إتمام الطلب</span></button>
     </div>
 
     <div id="cart-screen">
-        <h2>سلة المشتريات</h2>
+        <h2 data-ar="سلة المشتريات" data-en="Your Cart">سلة المشتريات</h2>
         <div id="cart-items-container"></div>
-        <div class="total-price">الإجمالي: <span id="total-price-display">0</span> LE</div>
+        <div class="total-price"><span data-ar="الإجمالي:" data-en="Total:">الإجمالي:</span> <span id="total-price-display">0</span> LE</div>
         
-        <h3>ملاحظات الطلب</h3>
+        <h3 data-ar="ملاحظات الطلب" data-en="Order Notes">ملاحظات الطلب</h3>
         <div class="form-group">
             <textarea id="global-note" rows="3" placeholder="اكتب هنا أي ملاحظات إضافية (مثال: الكلاسيك بدون بصل، البطاطس عليها صوص جبنة)"></textarea>
         </div>
 
-        <h3>بيانات التوصيل</h3>
+        <h3 data-ar="بيانات التوصيل" data-en="Delivery Info">بيانات التوصيل</h3>
         <div class="form-group"><input type="text" id="cust-name" placeholder="الاسم (هيتسجل لمرة واحدة)" required></div>
         <div class="form-group"><input type="tel" id="cust-phone" placeholder="رقم الموبايل" required></div>
         
         <div id="address-book" style="display:none; margin: 15px 0;">
-            <label style="font-weight: bold; font-size:14px; color: #d35400;">اختار من عناوينك المتسجلة:</label>
+            <label style="font-weight: bold; font-size:14px; color: #d35400;" data-ar="اختار من عناوينك المتسجلة:" data-en="Saved Addresses:">اختار من عناوينك المتسجلة:</label>
             <div id="saved-addresses-list" style="display: flex; gap: 10px; overflow-x: auto; padding: 10px 0;"></div>
-            <label style="font-size:12px; color: var(--muted-text);">أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇</label>
+            <label style="font-size:12px; color: var(--muted-text);" data-ar="أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇" data-en="Or write a new address below 👇">أو اكتب عنوان جديد تحت وهنحفظهولك للمرة الجاية 👇</label>
         </div>
 
         <div class="form-group"><input type="text" id="cust-street" placeholder="الشارع أو المنطقة (مثال: الطالبية أو المريوطية)" required></div>
@@ -410,8 +426,19 @@
         </div>
         <div class="form-group"><input type="text" id="cust-landmark" placeholder="علامة مميزة (اختياري)"></div>
         
-        <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب</button>
-        <button class="btn btn-danger" onclick="backToMenu()">⬅️ رجوع للمنيو</button>
+        <button id="send-btn" class="btn" onclick="sendWhatsApp()" data-ar="📲 تأكيد وإرسال الطلب" data-en="📲 Confirm & Send Order">📲 تأكيد وإرسال الطلب</button>
+        <button class="btn btn-danger" onclick="backToMenu()" data-ar="⬅️ رجوع للمنيو" data-en="⬅️ Back to Menu">⬅️ رجوع للمنيو</button>
+    </div>
+</div>
+
+<!-- مودال التتبع -->
+<div class="modal-overlay" id="tracking-modal">
+    <div class="modal-content">
+        <h3 data-ar="تتبع طلبك 📍" data-en="Track Your Order 📍">تتبع طلبك 📍</h3>
+        <input type="text" id="track-order-id" placeholder="رقم الطلب (مثال: MB-12345)" style="text-align: center; font-weight: bold; letter-spacing: 2px;">
+        <button class="btn" onclick="checkOrderStatus()" data-ar="🔍 استعلام" data-en="🔍 Check Status">🔍 استعلام</button>
+        <div id="tracking-result" style="margin-top: 15px; font-weight: bold; font-size: 18px; min-height: 30px;"></div>
+        <button class="btn btn-secondary" style="margin-top:15px;" onclick="closeTrackingModal()" data-ar="إغلاق" data-en="Close">إغلاق</button>
     </div>
 </div>
 
@@ -423,39 +450,71 @@
         
         <div id="ar-container" style="display: none;"></div>
 
-        <label style="font-weight: bold; font-size:14px; text-align:right; display:block;">اختار الحجم/السعر:</label>
+        <label style="font-weight: bold; font-size:14px; text-align:right; display:block;" data-ar="اختار الحجم/السعر:" data-en="Choose Size/Price:">اختار الحجم/السعر:</label>
         <select id="modal-size-select"></select>
         
         <div id="modal-cook-group" style="display: none;">
-            <label style="font-weight: bold; font-size:14px; text-align:right; display:block; margin-top:10px;">طريقة الطهي:</label>
+            <label style="font-weight: bold; font-size:14px; text-align:right; display:block; margin-top:10px;" data-ar="طريقة الطهي:" data-en="Cooking Method:">طريقة الطهي:</label>
             <select id="modal-cook-select">
                 <option value="مقلي">مقلي</option>
                 <option value="مشوي">مشوي</option>
             </select>
         </div>
 
-        <label style="font-weight: bold; font-size:14px; text-align:right; display:block; margin-top:10px;">الكمية:</label>
+        <label style="font-weight: bold; font-size:14px; text-align:right; display:block; margin-top:10px;" data-ar="الكمية:" data-en="Quantity:">الكمية:</label>
         <div class="qty-controls">
             <button class="qty-btn" onclick="changeModalQty(1)">+</button>
             <span id="modal-qty-display" class="qty-number">1</span>
             <button class="qty-btn" onclick="changeModalQty(-1)">-</button>
         </div>
 
-        <button class="btn" onclick="processAddToCart()">➕ أضف للسلة</button>
-        <button class="btn btn-danger" style="margin-top:5px;" onclick="closeModal()">إلغاء</button>
+        <button class="btn" onclick="processAddToCart()" data-ar="➕ أضف للسلة" data-en="➕ Add to Cart">➕ أضف للسلة</button>
+        <button class="btn btn-danger" style="margin-top:5px;" onclick="closeModal()" data-ar="إلغاء" data-en="Cancel">إلغاء</button>
     </div>
 </div>
 
 <div class="modal-overlay" id="upsell-modal">
     <div class="modal-content" style="background-color: var(--upsell-bg); border: 2px solid var(--primary);">
-        <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
+        <h3 style="margin-top: 0;">🥤 <span data-ar="كمل العظمة وخليها وجبة!" data-en="Make it a Combo!">كمل العظمة وخليها وجبة!</span></h3>
         <p id="upsell-text-content" style="font-size: 16px; font-weight: bold; line-height: 1.5;"></p>
-        <button class="btn" style="background-color: #28a745; color: white;" onclick="confirmUpsell(true)">🍟 أيوة، خليها كومبو!</button>
-        <button class="btn btn-secondary" onclick="confirmUpsell(false)">شكراً، عايز الساندوتش لوحده</button>
+        <button class="btn" style="background-color: #28a745; color: white;" onclick="confirmUpsell(true)" data-ar="🍟 أيوة، خليها كومبو!" data-en="🍟 Yes, Make it Combo!">🍟 أيوة، خليها كومبو!</button>
+        <button class="btn btn-secondary" onclick="confirmUpsell(false)" data-ar="شكراً، عايز الساندوتش لوحده" data-en="No thanks, Just sandwich">شكراً، عايز الساندوتش لوحده</button>
     </div>
 </div>
 
 <script>
+    // ==========================================
+    // تهيئة اللغات (Multi-language)
+    // ==========================================
+    let currentLang = localStorage.getItem('mannys_lang') || 'ar';
+
+    function toggleLanguage() {
+        currentLang = currentLang === 'ar' ? 'en' : 'ar';
+        localStorage.setItem('mannys_lang', currentLang);
+        applyLanguage();
+    }
+
+    function applyLanguage() {
+        document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+        document.getElementById('lang-toggle').innerText = currentLang === 'ar' ? 'English' : 'عربي';
+
+        document.querySelectorAll('[data-ar]').forEach(el => {
+            el.innerHTML = el.getAttribute(`data-${currentLang}`);
+        });
+
+        document.getElementById("cust-name").placeholder = currentLang === 'ar' ? "الاسم" : "Name";
+        document.getElementById("cust-phone").placeholder = currentLang === 'ar' ? "رقم الموبايل" : "Phone Number";
+        document.getElementById("cust-street").placeholder = currentLang === 'ar' ? "الشارع أو المنطقة" : "Street / Area";
+        document.getElementById("cust-building").placeholder = currentLang === 'ar' ? "عمارة" : "Building";
+        document.getElementById("cust-floor").placeholder = currentLang === 'ar' ? "دور" : "Floor";
+        document.getElementById("cust-apt").placeholder = currentLang === 'ar' ? "شقة" : "Apt";
+        document.getElementById("cust-landmark").placeholder = currentLang === 'ar' ? "علامة مميزة (اختياري)" : "Landmark (Optional)";
+        document.getElementById("global-note").placeholder = currentLang === 'ar' ? "ملاحظات إضافية للأوردر" : "Order Notes";
+        document.getElementById("track-order-id").placeholder = currentLang === 'ar' ? "رقم الطلب (مثال: MB-12345)" : "Order ID (e.g. MB-12345)";
+        
+        renderCart(); 
+    }
+
     // ==========================================
     // تهيئة المؤثرات الصوتية
     // ==========================================
@@ -469,37 +528,31 @@
     };
 
     function playCategorySound(category) {
-        if (category === "Beef") {
-            sfx.grill.currentTime = 0; sfx.grill.play().catch(()=>{});
-        } else if (category === "Chicken" || category === "Fries") {
-            sfx.fry.currentTime = 0; sfx.fry.play().catch(()=>{});
-        } else if (category === "Drinks") {
-            sfx.drink.currentTime = 0; sfx.drink.play().catch(()=>{});
-        } else {
-            sfx.pop.currentTime = 0; sfx.pop.play().catch(()=>{});
-        }
+        if (category === "Beef") { sfx.grill.currentTime = 0; sfx.grill.play().catch(()=>{}); } 
+        else if (category === "Chicken" || category === "Fries") { sfx.fry.currentTime = 0; sfx.fry.play().catch(()=>{}); } 
+        else if (category === "Drinks") { sfx.drink.currentTime = 0; sfx.drink.play().catch(()=>{}); } 
+        else { sfx.pop.currentTime = 0; sfx.pop.play().catch(()=>{}); }
     }
 
     // ==========================================
-    // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
+    // اللوجيك للربط كقاعدة بيانات
     // ==========================================
     
     // ⚠️⚠️ ضع لينك السكريبت الخاص بك هنا بين علامتي التنصيص ⚠️⚠️
     const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwbPwWjEMhlzr_lY2grRw7_WtTWoTLbBrVlJnjIOTyXV3GPolV0LtTXX7jWH42k_IqVag/exec";
     
-    let menuData = [];
-    let currentBranch = "";
-    let cart = [];
-    let activeCategory = "Beef";
-    let selectedItemIndex = null;
-    let currentModalQty = 1;
-    let pendingItem = null; 
-    let savedAddressesArray = [];
+    let menuData = []; let currentBranch = ""; let cart = []; let activeCategory = "Beef";
+    let selectedItemIndex = null; let currentModalQty = 1; let pendingItem = null; let savedAddressesArray = [];
     
     const WHATSAPP_NUMBER = "201070500094"; 
     const COMBO_PRICES = { Faisal: 60, SharmNaama: 70, SharmNabq: 70 };
 
-    function getBranchNameAr(branchCode) {
+    function getBranchName(branchCode) {
+        if(currentLang === 'en') {
+            if (branchCode === 'Faisal') return 'Faisal';
+            if (branchCode === 'SharmNaama') return 'Sharm (Naama)';
+            if (branchCode === 'SharmNabq') return 'Sharm (Nabq)';
+        }
         if (branchCode === 'Faisal') return 'فيصل';
         if (branchCode === 'SharmNaama') return 'شرم (خليج نعمة)';
         if (branchCode === 'SharmNabq') return 'شرم (خليج نبق)';
@@ -509,14 +562,12 @@
     async function fetchMenuFromSheet() {
         document.getElementById("menu-grid").innerHTML = `
             <div style="grid-column: 1/-1; text-align: center; padding: 20px;">
-                <h3>جاري تحميل المنيو... 🍔</h3>
-                <p style="font-size:14px; color:var(--muted-text);">لحظات وبنجهزلك أجدد الأسعار</p>
+                <h3>${currentLang==='ar'?'جاري تحميل المنيو... 🍔':'Loading Menu... 🍔'}</h3>
             </div>`;
         
         try {
             const response = await fetch(SHEET_API_URL);
             const rawData = await response.json();
-            
             menuData = []; 
 
             function parseAvailability(val) {
@@ -556,36 +607,23 @@
                         category: (row.Category && String(row.Category).trim() !== "") ? String(row.Category).trim() : "أخرى",
                         name: (row.Name && String(row.Name).trim() !== "") ? String(row.Name).trim() : "صنف بدون اسم",
                         desc: (row.Description && String(row.Description).trim() !== "") ? String(row.Description).trim() : "",
-                        sizes: sizesArr,
-                        needsCookingType: needsCook,
-                        prices: pricesObj,
-                        available: {
-                            Faisal: availFaisal,
-                            SharmNaama: availSharmNaama,
-                            SharmNabq: availSharmNabq
-                        }
+                        sizes: sizesArr, needsCookingType: needsCook, prices: pricesObj,
+                        available: { Faisal: availFaisal, SharmNaama: availSharmNaama, SharmNabq: availSharmNabq }
                     });
-                } catch (itemError) {
-                    console.error(`تم تخطي الصنف في الصف ${index + 2} بسبب خطأ:`, itemError);
-                }
+                } catch (itemError) { console.error(`تخطي`, itemError); }
             });
 
             if (menuData.length === 0) {
-                document.getElementById("menu-grid").innerHTML = `<h3 style="grid-column: 1/-1; text-align: center; margin-top:20px;">المنيو فارغ حالياً 🍔</h3>`;
+                document.getElementById("menu-grid").innerHTML = `<h3 style="grid-column: 1/-1; text-align: center;">المنيو فارغ حالياً 🍔</h3>`;
                 return;
             }
 
             const categories = [...new Set(menuData.map(item => item.category))];
-            if (!categories.includes(activeCategory) && categories.length > 0) {
-                activeCategory = categories[0];
-            }
+            if (!categories.includes(activeCategory) && categories.length > 0) activeCategory = categories[0];
 
-            renderSidebar();
-            renderMenuGrid();
-
+            renderSidebar(); renderMenuGrid();
         } catch (error) {
-            console.error("مشكلة في تحميل المنيو:", error);
-            document.getElementById("menu-grid").innerHTML = `<p style="grid-column: 1/-1; color: red; text-align: center; font-weight: bold; margin-top: 20px;">حصلت مشكلة في الاتصال بالمنيو. برجاء التأكد من الإنترنت وتحديث الصفحة.</p>`;
+            document.getElementById("menu-grid").innerHTML = `<p style="grid-column: 1/-1; color: red; text-align: center; font-weight: bold;">حدث خطأ في الاتصال بالمنيو.</p>`;
         }
     }
 
@@ -596,27 +634,15 @@
         document.body.classList.toggle('dark-mode');
         document.documentElement.classList.toggle('dark-mode');
         const isDark = document.body.classList.contains('dark-mode');
-        
         localStorage.setItem('mannys_theme', isDark ? 'dark' : 'light');
         document.getElementById('theme-toggle').innerText = isDark ? '☀️' : '🌙';
-
         const metaThemeColor = document.getElementById('meta-theme-color');
-        if (metaThemeColor) {
-            metaThemeColor.setAttribute('content', isDark ? '#121212' : '#f2f4f7');
-        }
+        if (metaThemeColor) metaThemeColor.setAttribute('content', isDark ? '#121212' : '#f2f4f7');
     }
 
     function checkSmartMemory() {
         const savedTheme = localStorage.getItem('mannys_theme');
-        if (savedTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.documentElement.classList.add('dark-mode');
-            document.getElementById('theme-toggle').innerText = '☀️';
-            const metaThemeColor = document.getElementById('meta-theme-color');
-            if (metaThemeColor) {
-                metaThemeColor.setAttribute('content', '#121212');
-            }
-        }
+        if (savedTheme === 'dark') { toggleTheme(); toggleTheme(); }
 
         const legacyCustStr = localStorage.getItem('mannys_customer');
         if (legacyCustStr && !localStorage.getItem('mannys_profile')) {
@@ -633,9 +659,7 @@
             const profile = JSON.parse(savedProfileStr);
             document.getElementById("cust-name").value = profile.name || "";
             document.getElementById("cust-phone").value = profile.phone || "";
-            
-            const firstName = profile.name ? profile.name.split(' ')[0] : "يا فندم";
-            document.getElementById("saved-name").innerText = firstName;
+            document.getElementById("saved-name").innerText = profile.name ? profile.name.split(' ')[0] : "يا فندم";
         }
 
         const savedAddrsStr = localStorage.getItem('mannys_addresses');
@@ -648,21 +672,20 @@
         if (savedOrderStr && JSON.parse(savedOrderStr).length > 0 && savedProfileStr) {
             document.getElementById("welcome-back-section").style.display = "block";
         }
+        
+        applyLanguage();
     }
     window.onload = checkSmartMemory;
 
     function renderSavedAddresses() {
         if (savedAddressesArray.length === 0) return;
-        
         document.getElementById("address-book").style.display = "block";
         const list = document.getElementById("saved-addresses-list");
         list.innerHTML = "";
-        
         savedAddressesArray.forEach((addr, i) => {
             let label = `📍 ${addr.street}`;
             if(addr.building) label += `، عمارة ${addr.building}`;
             if(addr.apt) label += `، شقة ${addr.apt}`;
-            
             list.innerHTML += `<div class="address-chip" onclick="fillSavedAddress(${i})">${label}</div>`;
         });
     }
@@ -679,26 +702,18 @@
     function reorderLastTime() {
         const savedOrderStr = localStorage.getItem('mannys_last_order');
         const savedCustStr = localStorage.getItem('mannys_customer');
-        
         if (savedOrderStr) {
             cart = JSON.parse(savedOrderStr);
-            
             if (savedCustStr) {
                 const cust = JSON.parse(savedCustStr);
                 currentBranch = cust.branch || 'Faisal';
                 if(currentBranch === 'Sharm') currentBranch = 'SharmNaama'; 
-            } else {
-                currentBranch = 'Faisal'; 
-            }
+            } else { currentBranch = 'Faisal'; }
             
-            document.getElementById("branch-name-display").innerText = getBranchNameAr(currentBranch);
-            
+            document.getElementById("branch-name-display").innerText = getBranchName(currentBranch);
             document.getElementById("branch-screen").style.display = "none";
             document.getElementById("cart-screen").style.display = "block";
-            
-            updateCartCount();
-            renderCart();
-            
+            updateCartCount(); renderCart();
             try { if(sfx.cash) { sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{}); } } catch(e){}
         }
     }
@@ -710,19 +725,12 @@
         currentBranch = branch;
         document.getElementById("branch-screen").style.display = "none";
         document.getElementById("menu-screen").style.display = "block";
-        document.getElementById("branch-name-display").innerText = getBranchNameAr(branch);
-        
-        if(menuData.length === 0) {
-            fetchMenuFromSheet();
-        } else {
-            renderSidebar();
-            renderMenuGrid();
-        }
+        document.getElementById("branch-name-display").innerText = getBranchName(branch);
+        if(menuData.length === 0) fetchMenuFromSheet(); else { renderSidebar(); renderMenuGrid(); }
     }
 
     function renderSidebar() {
-        const sidebar = document.getElementById("sidebar-categories");
-        sidebar.innerHTML = "";
+        const sidebar = document.getElementById("sidebar-categories"); sidebar.innerHTML = "";
         const categories = [...new Set(menuData.map(item => item.category))];
         categories.forEach(cat => {
             let isActive = cat === activeCategory ? "active" : "";
@@ -730,24 +738,19 @@
         });
     }
 
-    function filterCategory(cat) {
-        activeCategory = cat;
-        renderSidebar();
-        renderMenuGrid();
-    }
+    function filterCategory(cat) { activeCategory = cat; renderSidebar(); renderMenuGrid(); }
 
     function renderMenuGrid() {
-        const grid = document.getElementById("menu-grid");
-        grid.innerHTML = "";
+        const grid = document.getElementById("menu-grid"); grid.innerHTML = "";
         menuData.forEach((item, index) => {
             if (item.category === activeCategory) {
                 if (item.available[currentBranch]) {
                     grid.innerHTML += `<div class="item-btn" onclick="openModal(${index})">${item.name}</div>`;
                 } else {
                     grid.innerHTML += `
-                        <div class="item-btn" style="opacity: 0.55; border-color: #a0a0a0; background-color: rgba(0,0,0,0.05); cursor: not-allowed; display: flex; flex-direction: column; gap: 4px;" onclick="alert('عذراً، صنف ${item.name} غير متاح حالياً ❌')">
+                        <div class="item-btn" style="opacity: 0.55; border-color: #a0a0a0; background-color: rgba(0,0,0,0.05); cursor: not-allowed; display: flex; flex-direction: column; gap: 4px;" onclick="alert('${currentLang==='ar'?'عذراً، الصنف غير متاح':'Sorry, item not available'}')">
                             <span>${item.name}</span>
-                            <span style="font-size: 11px; color: #dc3545; font-weight: bold;">غير متاح</span>
+                            <span style="font-size: 11px; color: #dc3545; font-weight: bold;">${currentLang==='ar'?'غير متاح':'Not Available'}</span>
                         </div>`;
                 }
             }
@@ -755,52 +758,30 @@
     }
 
     function openModal(index) {
-        selectedItemIndex = index;
-        currentModalQty = 1; 
+        selectedItemIndex = index; currentModalQty = 1; 
         document.getElementById("modal-qty-display").innerText = currentModalQty;
-
-        const item = menuData[index];
-        document.getElementById("modal-item-name").innerText = item.name;
+        const item = menuData[index]; document.getElementById("modal-item-name").innerText = item.name;
         
         const descElement = document.getElementById("modal-item-desc");
-        if (item.desc && item.desc.trim() !== "") {
-            descElement.innerText = item.desc;
-            descElement.style.display = "block";
-        } else {
-            descElement.style.display = "none";
-        }
+        if (item.desc && item.desc.trim() !== "") { descElement.innerText = item.desc; descElement.style.display = "block"; } 
+        else { descElement.style.display = "none"; }
         
-        const sizeSelect = document.getElementById("modal-size-select");
-        sizeSelect.innerHTML = "";
+        const sizeSelect = document.getElementById("modal-size-select"); sizeSelect.innerHTML = "";
         item.sizes.forEach(size => {
             let price = item.prices[currentBranch][size];
-            let sizeLabel = size === "One Size" ? "إضافة" : size;
+            let sizeLabel = size === "One Size" ? (currentLang==='ar'?"إضافة":"Add") : size;
             sizeSelect.innerHTML += `<option value="${size}|${price}">${sizeLabel} - ${price} LE</option>`;
         });
 
-        if (item.needsCookingType) {
-            document.getElementById("modal-cook-group").style.display = "block";
-        } else {
-            document.getElementById("modal-cook-group").style.display = "none";
-        }
+        document.getElementById("modal-cook-group").style.display = item.needsCookingType ? "block" : "none";
         document.getElementById("item-modal").style.display = "flex";
     }
 
-    function changeModalQty(delta) {
-        if (currentModalQty + delta >= 1) {
-            currentModalQty += delta;
-            document.getElementById("modal-qty-display").innerText = currentModalQty;
-        }
-    }
-
-    function closeModal() {
-        document.getElementById("item-modal").style.display = "none";
-        selectedItemIndex = null;
-    }
+    function changeModalQty(delta) { if (currentModalQty + delta >= 1) { currentModalQty += delta; document.getElementById("modal-qty-display").innerText = currentModalQty; } }
+    function closeModal() { document.getElementById("item-modal").style.display = "none"; selectedItemIndex = null; }
 
     function processAddToCart() {
         if(selectedItemIndex === null) return;
-        
         const item = menuData[selectedItemIndex];
         const sizeSelect = document.getElementById("modal-size-select").value;
         const [size, price] = sizeSelect.split('|');
@@ -808,189 +789,124 @@
         let cookType = item.needsCookingType ? document.getElementById("modal-cook-select").value : "";
         let cleanSize = size === "One Size" ? "" : size;
 
-        pendingItem = {
-            name: item.name,
-            category: item.category,
-            size: cleanSize,
-            price: parseInt(price),
-            cookType: cookType,
-            quantity: currentModalQty,
-            hasCombo: false,
-            comboPrice: 0,
-            comboDesc: "" 
-        };
-
+        pendingItem = { name: item.name, category: item.category, size: cleanSize, price: parseInt(price), cookType: cookType, quantity: currentModalQty, hasCombo: false, comboPrice: 0, comboDesc: "" };
         closeModal();
 
         if (item.category === "Beef" || item.category === "Chicken" || item.category === "Sandwich") {
             let isSmash = item.name.includes("سماش") || item.name.toLowerCase().includes("smash");
             let upsellText = document.getElementById("upsell-text-content");
-            
-            if (isSmash) {
-                upsellText.innerHTML = `ضيف بطاطس وبيبسي و<strong>صوص سماش</strong> مع الساندوتش <span style="color: #28a745; font-size: 20px;">ببلاش! (0 LE)</span>`;
-            } else {
-                upsellText.innerHTML = `ضيف بطاطس وبيبسي مع الساندوتش بـ <span style="color: #dc3545; font-size: 20px;">${COMBO_PRICES[currentBranch]}</span> LE بس!`;
-            }
-            
+            if (isSmash) upsellText.innerHTML = currentLang==='ar' ? `ضيف بطاطس وبيبسي و<strong>صوص سماش</strong> مع الساندوتش <span style="color: #28a745; font-size: 20px;">ببلاش! (0 LE)</span>` : `Add Fries, Pepsi & <strong>Smash sauce</strong> <span style="color: #28a745; font-size: 20px;">For Free! (0 LE)</span>`;
+            else upsellText.innerHTML = currentLang==='ar' ? `ضيف بطاطس وبيبسي مع الساندوتش بـ <span style="color: #dc3545; font-size: 20px;">${COMBO_PRICES[currentBranch]}</span> LE بس!` : `Add Fries & Pepsi for <span style="color: #dc3545; font-size: 20px;">${COMBO_PRICES[currentBranch]}</span> LE!`;
             document.getElementById("upsell-modal").style.display = "flex";
-        } else {
-            finalizeAddToCart(false);
-        }
+        } else finalizeAddToCart(false);
     }
 
-    function confirmUpsell(wantsCombo) {
-        document.getElementById("upsell-modal").style.display = "none";
-        finalizeAddToCart(wantsCombo);
-    }
+    function confirmUpsell(wantsCombo) { document.getElementById("upsell-modal").style.display = "none"; finalizeAddToCart(wantsCombo); }
 
     function finalizeAddToCart(wantsCombo) {
         if (!pendingItem) return;
-
         if (wantsCombo) {
             pendingItem.hasCombo = true;
-            
             let isSmash = pendingItem.name.includes("سماش") || pendingItem.name.toLowerCase().includes("smash");
-            if (isSmash) {
-                pendingItem.comboPrice = 0;
-                pendingItem.comboDesc = "➕ كومبو السماش (بطاطس + بيبسي + صوص سماش) - مجاناً";
-            } else {
-                pendingItem.comboPrice = COMBO_PRICES[currentBranch];
-                pendingItem.comboDesc = "➕ وجبة كومبو (بطاطس + بيبسي)";
-            }
+            if (isSmash) { pendingItem.comboPrice = 0; pendingItem.comboDesc = currentLang==='ar' ? "➕ كومبو السماش مجاناً" : "➕ Free Smash Combo"; } 
+            else { pendingItem.comboPrice = COMBO_PRICES[currentBranch]; pendingItem.comboDesc = currentLang==='ar' ? "➕ وجبة كومبو (بطاطس+بيبسي)" : "➕ Combo Meal"; }
         }
 
-        let existingItem = cart.find(i => 
-            i.name === pendingItem.name && 
-            i.size === pendingItem.size && 
-            i.cookType === pendingItem.cookType &&
-            i.hasCombo === pendingItem.hasCombo
-        );
-        
-        if (existingItem) {
-            existingItem.quantity += pendingItem.quantity;
-        } else {
-            cart.push(pendingItem);
-        }
+        let existingItem = cart.find(i => i.name === pendingItem.name && i.size === pendingItem.size && i.cookType === pendingItem.cookType && i.hasCombo === pendingItem.hasCombo);
+        if (existingItem) existingItem.quantity += pendingItem.quantity; else cart.push(pendingItem);
 
         playCategorySound(pendingItem.category);
-        updateCartCount();
-        pendingItem = null;
+        updateCartCount(); pendingItem = null;
     }
 
-    function updateCartCount() {
-        const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-        document.getElementById("cart-count").innerText = totalItems;
-    }
-
-    function changeCartItemQty(index, delta) {
-        cart[index].quantity += delta;
-        if (cart[index].quantity <= 0) {
-            removeFromCart(index);
-        } else {
-            renderCart();
-            updateCartCount();
-        }
-    }
+    function updateCartCount() { document.getElementById("cart-count").innerText = cart.reduce((sum, item) => sum + item.quantity, 0); }
+    function changeCartItemQty(index, delta) { cart[index].quantity += delta; if (cart[index].quantity <= 0) removeFromCart(index); else { renderCart(); updateCartCount(); } }
 
     function showCart() {
-        if(cart.length === 0) {
-            alert("السلة فاضية! اختار ساندوتشاتك الأول.");
-            return;
-        }
-        
+        if(cart.length === 0) { alert(currentLang==='ar' ? "السلة فاضية!" : "Cart is empty!"); return; }
         try { if(sfx.cash) { sfx.cash.currentTime = 0; sfx.cash.play().catch(()=>{}); } } catch(e){}
-
-        document.getElementById("menu-screen").style.display = "none";
-        document.getElementById("cart-screen").style.display = "block";
-        renderCart();
+        document.getElementById("menu-screen").style.display = "none"; document.getElementById("cart-screen").style.display = "block"; renderCart();
     }
 
     function backToMenu() {
-        document.getElementById("cart-screen").style.display = "none";
-        document.getElementById("menu-screen").style.display = "block";
-        
-        if (menuData.length === 0) {
-            fetchMenuFromSheet();
-        } else {
-            renderSidebar();
-            renderMenuGrid();
-        }
+        document.getElementById("cart-screen").style.display = "none"; document.getElementById("menu-screen").style.display = "block";
+        if (menuData.length === 0) fetchMenuFromSheet(); else { renderSidebar(); renderMenuGrid(); }
     }
 
     function renderCart() {
-        const container = document.getElementById("cart-items-container");
-        if (!container) return;
-        
+        const container = document.getElementById("cart-items-container"); if (!container) return;
         try {
-            let total = 0;
-            let htmlContent = ""; 
-
+            let total = 0; let htmlContent = ""; 
             cart.forEach((item, i) => {
-                let price = parseInt(item.price) || 0;
-                let comboPrice = parseInt(item.comboPrice) || 0;
-                let qty = parseInt(item.quantity) || 1;
-                
-                let unitPrice = price + (item.hasCombo === true ? comboPrice : 0);
-                let itemTotal = unitPrice * qty;
-                total += itemTotal;
-                
-                let itemName = item.name || "صنف غير معروف";
-                let cookStr = item.cookType ? `(${item.cookType})` : "";
-                let sizeStr = item.size ? `[${item.size}]` : "";
-                
-                let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}</span>` : "";
-                
+                let price = parseInt(item.price) || 0; let comboPrice = parseInt(item.comboPrice) || 0; let qty = parseInt(item.quantity) || 1;
+                let unitPrice = price + (item.hasCombo === true ? comboPrice : 0); let itemTotal = unitPrice * qty; total += itemTotal;
+                let itemName = item.name || "Unknown"; let cookStr = item.cookType ? `(${item.cookType})` : ""; let sizeStr = item.size ? `[${item.size}]` : "";
+                let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">${item.comboDesc}</span>` : "";
+                let rmvTxt = currentLang === 'ar' ? '❌ حذف' : '❌ Remove';
                 htmlContent += `
                     <div class="cart-item">
                         <strong style="font-size:16px;">${itemName} ${cookStr} ${sizeStr}</strong> ${comboStr} <br>
-                        <div style="margin-top: 10px;">
-                            <span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span>
-                        </div>
-                        
+                        <div style="margin-top: 10px;"><span style="font-size:16px; color:#d35400; font-weight:bold;">${itemTotal} LE</span></div>
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px;">
                             <div class="qty-controls" style="margin: 0; padding: 0; background: none;">
                                 <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, 1)">+</button>
                                 <span class="qty-number" style="font-size: 18px;">${qty}</span>
                                 <button class="qty-btn" style="width: 30px; height: 30px; font-size: 16px;" onclick="changeCartItemQty(${i}, -1)">-</button>
                             </div>
-                            <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:var(--input-bg); padding:5px 10px; border-radius:5px; cursor:pointer;">❌ حذف</button>
+                            <button onclick="removeFromCart(${i})" style="color:red; border:1px solid red; background:var(--input-bg); padding:5px 10px; border-radius:5px; cursor:pointer;">${rmvTxt}</button>
                         </div>
                     </div>`;
             });
+            container.innerHTML = htmlContent; document.getElementById("total-price-display").innerText = total;
+        } catch (error) { container.innerHTML = `<p style="text-align:center; color:red;">خطأ في عرض السلة.</p>`; }
+    }
+
+    function removeFromCart(index) { cart.splice(index, 1); updateCartCount(); if(cart.length === 0) backToMenu(); else renderCart(); }
+
+    // ==========================================
+    // تتبع الطلبات (Order Tracking)
+    // ==========================================
+    function openTrackingModal() {
+        document.getElementById("track-order-id").value = localStorage.getItem('mannys_last_order_id') || "";
+        document.getElementById("tracking-result").innerHTML = "";
+        document.getElementById("tracking-modal").style.display = "flex";
+    }
+    function closeTrackingModal() { document.getElementById("tracking-modal").style.display = "none"; }
+
+    async function checkOrderStatus() {
+        let orderId = document.getElementById("track-order-id").value.trim();
+        let resDiv = document.getElementById("tracking-result");
+        if(!orderId) { resDiv.innerHTML = `<span style="color:red;">${currentLang==='ar'?'أدخل رقم الطلب!':'Enter Order ID!'}</span>`; return; }
+
+        resDiv.innerHTML = `<span style="color:#f0a500;">${currentLang==='ar'?'جاري البحث... ⏳':'Searching... ⏳'}</span>`;
+        try {
+            let res = await fetch(SHEET_API_URL + "?action=trackOrder&orderId=" + encodeURIComponent(orderId));
+            let data = await res.json();
             
-            container.innerHTML = htmlContent;
-            document.getElementById("total-price-display").innerText = total;
-
-        } catch (error) {
-            console.error("خطأ أثناء رسم السلة:", error);
-            container.innerHTML = `<p style="text-align:center; color:red; font-weight:bold;">حدث خطأ بسيط في عرض السلة. برجاء تحديث الصفحة والمحاولة مرة أخرى.</p>`;
-        }
-    }
-
-    function removeFromCart(index) {
-        cart.splice(index, 1);
-        updateCartCount();
-        if(cart.length === 0) {
-            backToMenu();
-        } else {
-            renderCart();
-        }
+            if(data.error) resDiv.innerHTML = `<span style="color:red;">❌ ${data.error}</span>`;
+            else {
+                let st = data.status; let col = "#222";
+                if(st.includes("جديد")) col = "#dc3545"; else if(st.includes("تجهيز")) col = "#f0a500"; else if(st.includes("توصيل")) col = "#28a745";
+                resDiv.innerHTML = `${currentLang==='ar'?'حالة الطلب:':'Status:'} <br><span style="color:${col}; font-size:22px;">${st}</span>`;
+            }
+        } catch(e) { resDiv.innerHTML = `<span style="color:red;">خطأ في الاتصال!</span>`; }
     }
 
     // ==========================================
-    // الإرسال للواتساب واللوحة الخلفية (Dashboard)
+    // الإرسال للواتساب واللوحة الخلفية
     // ==========================================
-    function sendWhatsApp() {
+    async function sendWhatsApp() {
         const name = document.getElementById("cust-name").value.trim();
         const phone = document.getElementById("cust-phone").value.trim();
         const street = document.getElementById("cust-street").value.trim();
         
-        if(!name || !phone || !street) {
-            alert("⚠️ برجاء ملء البيانات الأساسية (الاسم، الموبايل، الشارع)!");
-            return;
-        }
+        if(!name || !phone || !street) { alert(currentLang==='ar'?"⚠️ برجاء ملء البيانات!":"⚠️ Please fill required info!"); return; }
 
-        try { if(sfx.motorcycle) { sfx.motorcycle.currentTime = 0; sfx.motorcycle.play().catch(()=>{}); } } catch(e){}
+        let sendBtn = document.getElementById("send-btn");
+        sendBtn.innerText = currentLang === 'ar' ? "جاري تسجيل الطلب... ⏳" : "Registering... ⏳";
+        sendBtn.disabled = true;
+
+        try { if(sfx.motorcycle) { sfx.motorcycle.currentTime=0; sfx.motorcycle.play().catch(()=>{}); } } catch(e){}
 
         const building = document.getElementById("cust-building").value.trim();
         const floor = document.getElementById("cust-floor").value.trim();
@@ -999,94 +915,48 @@
         const globalNote = document.getElementById("global-note").value.trim();
 
         localStorage.setItem('mannys_profile', JSON.stringify({name, phone}));
-
-        const currentAddr = { street, building, floor, apt, landmark };
-        const isExist = savedAddressesArray.some(a => a.street === street && a.building === building && a.apt === apt);
-        
-        if (!isExist) {
-            savedAddressesArray.unshift(currentAddr); 
-            if (savedAddressesArray.length > 3) savedAddressesArray.pop(); 
+        const cAddr = { street, building, floor, apt, landmark };
+        if (!savedAddressesArray.some(a => a.street === street && a.building === building)) {
+            savedAddressesArray.unshift(cAddr); if (savedAddressesArray.length > 3) savedAddressesArray.pop(); 
             localStorage.setItem('mannys_addresses', JSON.stringify(savedAddressesArray));
         }
-
-        const customerData = { branch: currentBranch };
-        localStorage.setItem('mannys_customer', JSON.stringify(customerData));
-
+        localStorage.setItem('mannys_customer', JSON.stringify({branch: currentBranch}));
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
-        const categoryPriority = {
-            "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4,
-            "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8
-        };
-
-        const sortedCart = [...cart].sort((a, b) => {
-            let orderA = categoryPriority[a.category] || 99;
-            let orderB = categoryPriority[b.category] || 99;
-            return orderA - orderB;
+        let total = 0; let dashStr = ""; let waStr = `*طلب جديد من فرع: ${getBranchName(currentBranch)}*\n-------------------\n*الاسم:* ${name}\n*الموبايل:* ${phone}\n*العنوان:* ${street}، ${building}، ${floor}، ${apt}\n-------------------\n`;
+        
+        const categoryPriority = { "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4, "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8 };
+        const sortedCart = [...cart].sort((a,b)=> (categoryPriority[a.category]||99) - (categoryPriority[b.category]||99));
+        
+        sortedCart.forEach(i => {
+            let p = i.price + (i.hasCombo ? i.comboPrice : 0); let t = p * i.quantity; total += t;
+            let ext = i.hasCombo ? (i.comboPrice===0?'(+كومبو مجاني)':'(+كومبو)') : '';
+            waStr += `▪️ ${i.quantity}x ${i.name} ${i.size} - ${t}LE ${ext}\n`;
+            dashStr += `${i.quantity}x ${i.name} ${i.size} ${ext}\n`;
         });
+        if(globalNote) waStr += `📝 *ملاحظات:* ${globalNote}\n`;
+        waStr += `💰 *الإجمالي: ${total} LE*`;
 
-        let total = 0;
-        let whatsappMessage = `*طلب جديد من فرع: ${getBranchNameAr(currentBranch)}* 🍔\n`;
-        whatsappMessage += `-------------------\n`;
-        whatsappMessage += `*الاسم:* ${name}\n`;
-        whatsappMessage += `*التليفون:* ${phone}\n`;
-        whatsappMessage += `*العنوان:* ${street}، عمارة ${building || '-'}، دور ${floor || '-'}، شقة ${apt || '-'}\n`;
-        if(landmark) whatsappMessage += `*علامة مميزة:* ${landmark}\n`;
-        whatsappMessage += `-------------------\n`;
-        whatsappMessage += `*الطلب:*\n\n`;
-
-        let orderDetailsForDashboard = "";
-
-        sortedCart.forEach(item => {
-            let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
-            let itemTotal = unitPrice * item.quantity;
-            total += itemTotal;
-            
-            let cookStr = item.cookType ? `(${item.cookType})` : "";
-            let sizeStr = item.size ? `[${item.size}]` : "";
-            let comboStr = item.hasCombo ? `\n   ${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}` : "";
-            
-            whatsappMessage += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE${comboStr}\n`;
-            
-            // تجهيز الداتا للوحة التحكم بدون الفرمتة الكتير بتاعت الواتس
-            let dashCombo = item.hasCombo ? (item.comboPrice === 0 ? '(+كومبو مجاني)' : '(+كومبو)') : '';
-            orderDetailsForDashboard += `${item.quantity}x ${item.name} ${cookStr} ${sizeStr} ${dashCombo}\n`;
-        });
-
-        whatsappMessage += `-------------------\n`;
-        if(globalNote) {
-            whatsappMessage += `📝 *ملاحظات العميل:*\n${globalNote}\n`;
-            whatsappMessage += `-------------------\n`;
-        }
-        whatsappMessage += `💰 *الإجمالي: ${total} LE*\n`;
-
-        // 1. إرسال الأوردر في الخلفية للوحة التحكم (Google Sheets)
-        const orderData = {
-            name: name,
-            phone: phone,
-            address: `${street}، عمارة ${building||'-'}، دور ${floor||'-'}، شقة ${apt||'-'} ${landmark ? '('+landmark+')' : ''}`,
-            orderDetails: orderDetailsForDashboard.trim(),
-            total: total,
-            branch: getBranchNameAr(currentBranch),
-            notes: globalNote
-        };
+        const orderData = { name, phone, address: `${street}، ${building}، ${floor}، ${apt} ${landmark?`(${landmark})`:''}`, orderDetails: dashStr.trim(), total, branch: getBranchName(currentBranch), notes: globalNote };
+        let genId = "";
 
         try {
-            fetch(SHEET_API_URL, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify(orderData)
-            });
+            let res = await fetch(SHEET_API_URL, { method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" }, body: JSON.stringify(orderData) });
+            let result = await res.json();
+            if(result.orderId) { genId = result.orderId; localStorage.setItem('mannys_last_order_id', genId); }
         } catch(e) { console.error("Database Error"); }
 
-        // 2. فتح الواتساب دايركت (مضاد للتعليق)
-        const encodedMsg = encodeURIComponent(whatsappMessage);
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMsg}`;
-        
-        let openedWindow = window.open(whatsappUrl, '_blank');
-        if (!openedWindow || openedWindow.closed || typeof openedWindow.closed == 'undefined') {
-            window.location.href = whatsappUrl;
+        if (genId) {
+            waStr = `*رقم الطلب:* ${genId}\n` + waStr;
+            alert(currentLang === 'ar' ? `تم تسجيل طلبك! رقم الطلب: ${genId}\nهنحولك للواتساب لتأكيد الاستلام.` : `Order registered! ID: ${genId}\nRedirecting to WhatsApp.`);
         }
+
+        const encodedMsg = encodeURIComponent(waStr);
+        const waUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMsg}`;
+        let win = window.open(waUrl, '_blank'); if (!win || win.closed || typeof win.closed == 'undefined') window.location.href = waUrl;
+
+        sendBtn.innerText = currentLang === 'ar' ? "📲 تأكيد وإرسال الطلب" : "📲 Confirm & Send";
+        sendBtn.disabled = false;
     }
 </script>
 
