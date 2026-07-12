@@ -410,7 +410,7 @@
         </div>
         <div class="form-group"><input type="text" id="cust-landmark" placeholder="علامة مميزة (اختياري)"></div>
         
-        <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب عبر واتساب</button>
+        <button class="btn" onclick="sendWhatsApp()">📲 إرسال الطلب</button>
         <button class="btn btn-danger" onclick="backToMenu()">⬅️ رجوع للمنيو</button>
     </div>
 </div>
@@ -446,7 +446,6 @@
     </div>
 </div>
 
-<!-- تم تعديل نافذة الكومبو عشان تدعم الرسالة المتغيرة (للسماش وغيره) -->
 <div class="modal-overlay" id="upsell-modal">
     <div class="modal-content" style="background-color: var(--upsell-bg); border: 2px solid var(--primary);">
         <h3 style="margin-top: 0;">🥤 كمل العظمة وخليها وجبة!</h3>
@@ -485,7 +484,8 @@
     // اللوجيك الجديد لربط جوجل شيت كقاعدة بيانات
     // ==========================================
     
-    const SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwoEDiLevbBcHf7o3YKWouxMZiXapvWoDw6dpHxI5hzAvqI7OW5y-FtahSRTQpX5wvIPg/exec";
+    // ⚠️⚠️ ضع لينك السكريبت الخاص بك هنا بين علامتي التنصيص ⚠️⚠️
+    const SHEET_API_URL = "حط_اللينك_بتاعك_هنا";
     
     let menuData = [];
     let currentBranch = "";
@@ -817,17 +817,15 @@
             quantity: currentModalQty,
             hasCombo: false,
             comboPrice: 0,
-            comboDesc: "" // حقل جديد عشان نوصف الكومبو في السلة والواتساب
+            comboDesc: "" 
         };
 
         closeModal();
 
-        // لو الصنف من الأقسام دي، هنعرض عليه الكومبو
         if (item.category === "Beef" || item.category === "Chicken" || item.category === "Sandwich") {
             let isSmash = item.name.includes("سماش") || item.name.toLowerCase().includes("smash");
             let upsellText = document.getElementById("upsell-text-content");
             
-            // تخصيص رسالة الكومبو بناءً على نوع الساندوتش
             if (isSmash) {
                 upsellText.innerHTML = `ضيف بطاطس وبيبسي و<strong>صوص سماش</strong> مع الساندوتش <span style="color: #28a745; font-size: 20px;">ببلاش! (0 LE)</span>`;
             } else {
@@ -851,7 +849,6 @@
         if (wantsCombo) {
             pendingItem.hasCombo = true;
             
-            // تحديد سعر ووصف الكومبو
             let isSmash = pendingItem.name.includes("سماش") || pendingItem.name.toLowerCase().includes("smash");
             if (isSmash) {
                 pendingItem.comboPrice = 0;
@@ -941,7 +938,6 @@
                 let cookStr = item.cookType ? `(${item.cookType})` : "";
                 let sizeStr = item.size ? `[${item.size}]` : "";
                 
-                // استخدام الوصف المتغير للكومبو
                 let comboStr = item.hasCombo === true ? `<br><span style="font-size:14px; color:#28a745; display:inline-block; margin-top:5px;">${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}</span>` : "";
                 
                 htmlContent += `
@@ -982,7 +978,7 @@
     }
 
     // ==========================================
-    // إرسال الواتساب (مع حماية الترتيب وضد التعليق)
+    // الإرسال للواتساب واللوحة الخلفية (Dashboard)
     // ==========================================
     function sendWhatsApp() {
         const name = document.getElementById("cust-name").value.trim();
@@ -1018,7 +1014,6 @@
 
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
-        // التأكيد على ترتيب الأصناف زي ما اتفقنا 
         const categoryPriority = {
             "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4,
             "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8
@@ -1031,14 +1026,16 @@
         });
 
         let total = 0;
-        let message = `*طلب جديد من فرع: ${getBranchNameAr(currentBranch)}* 🍔\n`;
-        message += `-------------------\n`;
-        message += `*الاسم:* ${name}\n`;
-        message += `*التليفون:* ${phone}\n`;
-        message += `*العنوان:* ${street}، عمارة ${building || '-'}، دور ${floor || '-'}، شقة ${apt || '-'}\n`;
-        if(landmark) message += `*علامة مميزة:* ${landmark}\n`;
-        message += `-------------------\n`;
-        message += `*الطلب:*\n\n`;
+        let whatsappMessage = `*طلب جديد من فرع: ${getBranchNameAr(currentBranch)}* 🍔\n`;
+        whatsappMessage += `-------------------\n`;
+        whatsappMessage += `*الاسم:* ${name}\n`;
+        whatsappMessage += `*التليفون:* ${phone}\n`;
+        whatsappMessage += `*العنوان:* ${street}، عمارة ${building || '-'}، دور ${floor || '-'}، شقة ${apt || '-'}\n`;
+        if(landmark) whatsappMessage += `*علامة مميزة:* ${landmark}\n`;
+        whatsappMessage += `-------------------\n`;
+        whatsappMessage += `*الطلب:*\n\n`;
+
+        let orderDetailsForDashboard = "";
 
         sortedCart.forEach(item => {
             let unitPrice = item.price + (item.hasCombo ? item.comboPrice : 0);
@@ -1049,19 +1046,41 @@
             let sizeStr = item.size ? `[${item.size}]` : "";
             let comboStr = item.hasCombo ? `\n   ${item.comboDesc || '➕ وجبة كومبو (بطاطس + بيبسي)'}` : "";
             
-            message += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE${comboStr}\n`;
+            whatsappMessage += `▪️ ${item.quantity}x ${item.name} ${cookStr} ${sizeStr} - ${itemTotal}LE${comboStr}\n`;
+            
+            // تجهيز الداتا للوحة التحكم بدون الفرمتة الكتير بتاعت الواتس
+            let dashCombo = item.hasCombo ? (item.comboPrice === 0 ? '(+كومبو مجاني)' : '(+كومبو)') : '';
+            orderDetailsForDashboard += `${item.quantity}x ${item.name} ${cookStr} ${sizeStr} ${dashCombo}\n`;
         });
 
-        message += `-------------------\n`;
+        whatsappMessage += `-------------------\n`;
         if(globalNote) {
-            message += `📝 *ملاحظات العميل:*\n${globalNote}\n`;
-            message += `-------------------\n`;
+            whatsappMessage += `📝 *ملاحظات العميل:*\n${globalNote}\n`;
+            whatsappMessage += `-------------------\n`;
         }
-        message += `💰 *الإجمالي: ${total} LE*\n`;
+        whatsappMessage += `💰 *الإجمالي: ${total} LE*\n`;
 
-        const encodedMsg = encodeURIComponent(message);
-        
-        // الخطة المضمونة لفتح الواتساب 
+        // 1. إرسال الأوردر في الخلفية للوحة التحكم (Google Sheets)
+        const orderData = {
+            name: name,
+            phone: phone,
+            address: `${street}، عمارة ${building||'-'}، دور ${floor||'-'}، شقة ${apt||'-'} ${landmark ? '('+landmark+')' : ''}`,
+            orderDetails: orderDetailsForDashboard.trim(),
+            total: total,
+            branch: getBranchNameAr(currentBranch),
+            notes: globalNote
+        };
+
+        try {
+            fetch(SHEET_API_URL, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify(orderData)
+            });
+        } catch(e) { console.error("Database Error"); }
+
+        // 2. فتح الواتساب دايركت (مضاد للتعليق)
+        const encodedMsg = encodeURIComponent(whatsappMessage);
         const whatsappUrl = `https://api.whatsapp.com/send?phone=${WHATSAPP_NUMBER}&text=${encodedMsg}`;
         
         let openedWindow = window.open(whatsappUrl, '_blank');
