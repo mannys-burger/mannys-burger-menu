@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
@@ -923,7 +924,10 @@
         localStorage.setItem('mannys_customer', JSON.stringify({branch: currentBranch}));
         localStorage.setItem('mannys_last_order', JSON.stringify(cart));
 
-        let total = 0; let dashStr = ""; let waStr = `*طلب جديد من فرع: ${getBranchName(currentBranch)}*\n-------------------\n*الاسم:* ${name}\n*الموبايل:* ${phone}\n*العنوان:* ${street}، ${building}، ${floor}، ${apt}\n-------------------\n`;
+        let total = 0; let dashStr = ""; 
+        let waStr = `*طلب جديد من فرع: ${getBranchName(currentBranch)}*\n-------------------\n*الاسم:* ${name}\n*الموبايل:* ${phone}\n*العنوان:* ${street}، ${building}، ${floor}، ${apt}\n`;
+        if (landmark) waStr += `📍 *علامة مميزة:* ${landmark}\n`;
+        waStr += `-------------------\n`;
         
         const categoryPriority = { "Beef": 1, "Chicken": 2, "Sandwich": 3, "Fries": 4, "Sides": 5, "Sauces": 6, "Extra": 7, "Drinks": 8 };
         const sortedCart = [...cart].sort((a,b)=> (categoryPriority[a.category]||99) - (categoryPriority[b.category]||99));
